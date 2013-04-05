@@ -1,0 +1,40 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/update" 
+        android:title="@string/menu_update" 
+        android:orderInCategory="100" 
+        android:onClick="onUpgrade" 
+        android:showAsAction="never">
+    </item>
+    <item android:id="@+id/terminal" 
+        android:orderInCategory="100" 
+        android:title='@string/menu_terminal' 
+        android:onClick="onTerminal" 
+        android:showAsAction="never">
+    </item>
+    <item android:id="@+id/logcat" 
+        android:orderInCategory="100" 
+        android:title='@string/menu_logcat' 
+        android:onClick="onLogCat" 
+        android:showAsAction="never">
+    </item>
+        <item android:id="@+id/logplay" 
+        android:orderInCategory="100" 
+        android:title='@string/menu_logplay'
+        android:onClick="onLogPlay" 
+        android:showAsAction="never">
+    </item>
+    <item android:id="@+id/settings" 
+        android:orderInCategory="100" 
+        android:title='@string/menu_settings'
+        android:onClick="onSettings" 
+        android:showAsAction="never">
+    </item>
+    <item android:id="@+id/menu_about"
+        android:title="@string/menu_about"
+        android:orderInCategory="100"
+        android:showAsAction="never" 
+        android:onClick="onAbout">
+    </item>
+    
+    
+</menu>

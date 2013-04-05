@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:app="http://schemas.android.com/apk/res/com.ultivox.uvoxplayer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/AppTheme"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/btnStart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".1"
+            android:onClick="onClickStart"
+            android:text="@string/start" />
+
+        <Button
+            android:id="@+id/btnStop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".1"
+            android:onClick="onClickStop"
+            android:text="@string/stop" />
+
+        <Button
+            android:id="@+id/btnNetSet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".1"
+            android:onClick="onClickNetset"
+            android:text="@string/net_set" />
+
+        <Button
+            android:id="@+id/butTimeSet"
+            android:layout_width="134dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".1"
+            android:onClick="onClickTimeset"
+            android:text="@string/date_set" />
+
+        <Button
+            android:id="@+id/butTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".1"
+            android:onClick="onClickTest"
+            android:text="@string/test" />
+
+        <Button
+            android:id="@+id/butDownload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".1"
+            android:onClick="onClickDownload"
+            android:text="@string/download" />
+    </LinearLayout>
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="275dip"
+        android:layout_weight="0.10"
+        android:columnCount="2" >
+
+       <TextView
+           android:id="@+id/textVolMusic"
+           android:layout_width="390dp"
+           android:layout_column="0"
+           android:layout_gravity="left"
+           android:minHeight="40dp"
+           android:padding="@dimen/padding_large"
+           android:text="Music Volume"
+           android:textAppearance="?android:attr/textAppearanceMedium" android:layout_height="wrap_content"/>
+
+        <SeekBar
+            android:id="@+id/seekBarMusic"
+            android:layout_width="380dp"
+            android:layout_column="0"
+            android:max="100"
+            android:maxHeight="40dip"
+            android:minHeight="40dip"
+            android:progress="100" android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/textVolMess"
+            android:layout_width="wrap_content"
+            android:layout_column="0"
+            android:layout_gravity="left"
+            android:minHeight="40dp"
+            android:padding="@dimen/padding_medium"
+            android:text="Message Volume"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:layout_height="wrap_content"/>
+
+        <SeekBar
+            android:id="@+id/seekBarMess"
+            android:layout_width="380dp"
+            android:layout_column="0"
+            android:max="100"
+            android:maxHeight="40dp"
+            android:minHeight="40dp"
+            android:progress="100" android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/textInfo"
+            android:layout_width="410dp"
+            android:layout_height="match_parent"
+            android:layout_column="1"
+            android:layout_gravity="top|right"
+            android:layout_row="0"
+            android:layout_rowSpan="4"
+            android:text="@string/info"
+            android:textSize="24dp" />
+
+    </GridLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:gravity="bottom|fill_horizontal"
+        android:orientation="horizontal"
+        android:padding="@dimen/padding_large"
+        android:weightSum="1" >
+
+        <DigitalClock
+            android:id="@+id/digitalClock1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".05"
+            android:text="DigitalClock" />
+
+        <TextView
+            android:id="@+id/textService"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="              "
+            android:layout_weight=".9"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".05"
+            android:indeterminate="true" />
+
+    </LinearLayout>
+
+</LinearLayout>

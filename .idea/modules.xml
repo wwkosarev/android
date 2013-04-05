@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/ReBootApp/ReBootApp.iml" filepath="$PROJECT_DIR$/ReBootApp/ReBootApp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ReInstall/ReInstall.iml" filepath="$PROJECT_DIR$/ReInstall/ReInstall.iml" />
+      <module fileurl="file://$PROJECT_DIR$/UVoxPlayer/UVoxPlayer.iml" filepath="$PROJECT_DIR$/UVoxPlayer/UVoxPlayer.iml" />
+    </modules>
+  </component>
+</project>
+
