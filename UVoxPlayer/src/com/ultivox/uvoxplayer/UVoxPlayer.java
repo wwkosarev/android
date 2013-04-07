@@ -1,24 +1,16 @@
 package com.ultivox.uvoxplayer;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
+import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.*;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
-import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,10 +18,16 @@ import android.view.View;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import com.ultivox.uvoxplayer.visualizer.VisualizerView;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
 
 public class UVoxPlayer extends Activity {
 
-	public static Activity activity;
+    public static final String PARAM_PLAYER = "vizual";
+    public static Activity activity;
 
 	public final static String INIT_UMS_NB = "UMS000003";
 	public final static String INIT_HOME_URL = "http://www.thinkinghouse.ru/netplayer/";
@@ -87,7 +85,8 @@ public class UVoxPlayer extends Activity {
 	public final static String BROADCAST_PLAYINFO = "com.ultivox.uvoxplayer.play";
 	public final static String BROADCAST_FINISH = "com.ultivox.uvoxplayer.finish";
 	public final static String BROADCAST_MUSICINFO = "com.ultivox.uvoxplayer.music";
-	public final static String BROADCAST_MESSINFO = "com.ultivox.uvoxplayer.message";
+    public final static String BROADCAST_MESSINFO = "com.ultivox.uvoxplayer.message";
+    public final static String BROADCAST_VOLUME = "com.ultivox.uvoxplayer.volume";
 
 	public final static String BROADCAST_SHOW = "com.ultivox.uvoxplayer.show";
 	public final static String PARAM_TEXT = "text";
@@ -118,13 +117,17 @@ public class UVoxPlayer extends Activity {
 	private UpgradeTask ugTask = null;
 
 	private BroadcastReceiver br;
-	private BroadcastReceiver brFinish;
+    private BroadcastReceiver brFinish;
+    private BroadcastReceiver brVolume;
 
 	private Intent intentMainService;
 
 	private static ContentResolver contRes;
 
-	@Override
+    private VisualizerView mVisualizerView;
+    private static int playSessionId = 0;
+
+    @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.d(LOG_TAG, "onCreate");
@@ -139,7 +142,7 @@ public class UVoxPlayer extends Activity {
 		initVolumes(volumes);
 		createAppDirs();
 		brStatus = new BroadcastReceiver() {
-			// действия при получении сообщений
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
@@ -211,7 +214,7 @@ public class UVoxPlayer extends Activity {
 					}
 				});
 		br = new BroadcastReceiver() {
-			// действия при получении сообщений
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
@@ -223,13 +226,13 @@ public class UVoxPlayer extends Activity {
 				}
 			}
 		};
-		// создаем фильтр для BroadcastReceiver
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ BroadcastReceiver
 		IntentFilter intFilt = new IntentFilter(BROADCAST_PLAYINFO);
-		// регистрируем (включаем) BroadcastReceiver
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ) BroadcastReceiver
 		registerReceiver(br, intFilt);
 
 		brFinish = new BroadcastReceiver() {
-			// действия при получении сообщений
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
@@ -243,10 +246,33 @@ public class UVoxPlayer extends Activity {
 				finish();
 			}
 		};
-		// создаем фильтр для BroadcastReceiver
+
 		IntentFilter intFinish = new IntentFilter(BROADCAST_FINISH);
-		// регистрируем (включаем) BroadcastReceiver
 		registerReceiver(brFinish, intFinish);
+
+        brVolume = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                int result = intent.getIntExtra(PARAM_PLAYER, 0);
+                Log.d(LOG_TAG, String.format("Receive visulizer brodcast with %d extra",result));
+                if ((result==0)&&(playSessionId!=0)) {
+                    // song start to play
+                    playSessionId = result;
+                }
+                if ((result!=0)&&(playSessionId==0)) {
+                    // song stop to play
+                    playSessionId = result;
+                    mVisualizerView.link(playSessionId);
+                } else {
+                    playSessionId = result;
+                }
+
+            }
+        };
+        IntentFilter intVolume = new IntentFilter(BROADCAST_VOLUME);
+        registerReceiver(brVolume, intVolume);
 
 		Intent intStartServer = new Intent(MainService.BROADCAST_ACT_SERVER);
 		intStartServer.putExtra(MainService.PARAM_RESULT,
@@ -299,7 +325,8 @@ public class UVoxPlayer extends Activity {
 			}
 		musicSeekBar.setProgress((int) (volumeMusic * 100));
 		messageSeekBar.setProgress((int) (volumeMessage * 100));
-		serviceInfo.setText("");
+        mVisualizerView = (VisualizerView) findViewById(R.id.viewVolume);
+        serviceInfo.setText("");
 	}
 
 	@Override
@@ -313,7 +340,8 @@ public class UVoxPlayer extends Activity {
 	}
 
 	public void onClickStop(View v) {
-		LogPlay.write("button", "Stop", "press");
+        mVisualizerView.clearRenderers();
+        LogPlay.write("button", "Stop", "press");
 		if (taskLogCat != null
 				&& taskLogCat.getStatus() != AsyncTask.Status.FINISHED) {
 			taskLogCat.cancel(true);
@@ -341,7 +369,7 @@ public class UVoxPlayer extends Activity {
 			ugTask.cancel(true);
 			ugTask = null;
 		}
-		stopService(new Intent(this, MainService.class));
+//		stopService(new Intent(this, MainService.class));
 	}
 
 	public void onClickNetset(View v) {

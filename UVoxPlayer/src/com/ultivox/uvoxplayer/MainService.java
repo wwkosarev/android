@@ -1,28 +1,22 @@
 package com.ultivox.uvoxplayer;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
+import android.content.*;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
+
+import java.io.File;
+import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainService extends Service {
 
@@ -82,7 +76,7 @@ public class MainService extends Service {
 		intentPlay = new Intent(this, PlayMusicService.class);
 		intentSchedule = new Intent(this, SchedulerService.class);
 		intentMessage = new Intent(this, PlayMessageService.class);
-		// создаем соединенние с сервисом PlayMusicService
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ PlayMusicService
 		sConn = new ServiceConnection() {
 
 			public void onServiceConnected(ComponentName name, IBinder binder) {
@@ -97,9 +91,9 @@ public class MainService extends Service {
 				boundPlay = false;
 			}
 		};
-		// создаем BroadcastReceiver
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ BroadcastReceiver
 		brMain = new BroadcastReceiver() {
-			// действия при получении сообщений
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
@@ -197,9 +191,9 @@ public class MainService extends Service {
 			}
 
 		};
-		// создаем фильтр для BroadcastReceiver
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ BroadcastReceiver
 		IntentFilter intFilt = new IntentFilter(BROADCAST_ACT_SCH);
-		// регистрируем (включаем) BroadcastReceiver
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ) BroadcastReceiver
 		registerReceiver(brMain, intFilt);
 
 		brServer = new BroadcastReceiver() {
@@ -216,7 +210,20 @@ public class MainService extends Service {
 					if (UVoxPlayer.LOGCAT_ON.equals("on")) {
 						taskLogCat = new TimeLogInfo(context);
 						taskQueue.offer(new LogCatTask(context));
-					}
+					} else {
+                        String logDirPath = Environment.getExternalStorageDirectory()
+                                .toString() + UVoxPlayer.LOGCAT_DIR;
+                        File logDir = new File(logDirPath);
+                        if (logDir.exists()) {
+                            String[] logFiles = logDir.list();
+                            for (int i=0; i<logFiles.length; i++ ) {
+                                    File f = new File(logDirPath + File.separator + logFiles[i]);
+                                    if (f.exists()) {
+                                        f.delete();
+                                    }
+                            }
+                        }
+                    }
 					if (UVoxPlayer.LOGPLAY_ON.equals("on")) {
 						taskQueue.offer(new LogPlayTask(context));
 					}
@@ -228,7 +235,11 @@ public class MainService extends Service {
 					}
 					taskQueue.offer(new SettingsTask(context));
 					isConnectionSession = true;
-					Intent mesServ = new Intent(BROADCAST_ACT_SERVER);
+                    LogPlay.write("system", "Server connection", "start");
+                    SysInfo sys = new SysInfo();
+                    LogPlay.write("system", sys.getMemFree(), "info");
+                    LogPlay.write("system", sys.getIntMemFree(), "info");
+                    Intent mesServ = new Intent(BROADCAST_ACT_SERVER);
 					mesServ.putExtra(PARAM_RESULT, SERVER_CONTINUE);
 					sendBroadcast(mesServ);
 					break;
@@ -273,9 +284,7 @@ public class MainService extends Service {
 						reLoad = false;
 						return;
 					}
-					// if (!isConnectionSession) {
-					// break;
-					// }
+                    LogPlay.write("system", "Server connection", "stop");
 					Intent intStartServer = new Intent(BROADCAST_ACT_SERVER);
 					intStartServer.putExtra(PARAM_RESULT, SERVER_START);
 					PendingIntent pendIntentStartServer = PendingIntent
@@ -311,7 +320,8 @@ public class MainService extends Service {
 					break;
 				}
 				case SERVER_ERROR: {
-					if (!isConnectionSession) {
+                    LogPlay.write("system", "Server connection", "error");
+                    if (!isConnectionSession) {
 						break;
 					}
 					Intent intStartServer = new Intent(BROADCAST_ACT_SERVER);

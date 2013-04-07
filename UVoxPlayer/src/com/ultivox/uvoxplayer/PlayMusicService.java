@@ -1,11 +1,5 @@
 package com.ultivox.uvoxplayer;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -19,6 +13,12 @@ import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class PlayMusicService extends Service {
 
@@ -84,6 +84,9 @@ public class PlayMusicService extends Service {
 				Log.d(TAG, "Song ended.");
 				LogPlay.write(UVoxPlayer.LOG_COMMAND_MUSIC, currFileToPlay,
 						LogPlay.STAT_END);
+                Intent mesConnVisual = new Intent(UVoxPlayer.BROADCAST_VOLUME);
+                mesConnVisual.putExtra(UVoxPlayer.PARAM_PLAYER, 0);
+                sendBroadcast(mesConnVisual);
 				mPlayer.stop();
 				mPlayer.release();
 				Intent mesint = new Intent(MainService.BROADCAST_ACT_SCH);
@@ -151,6 +154,9 @@ public class PlayMusicService extends Service {
 				mPlayer.setVolume(UVoxPlayer.volumeMusic,
 						UVoxPlayer.volumeMusic);
 				mPlayer.start();
+                Intent mesConnVisual = new Intent(UVoxPlayer.BROADCAST_VOLUME);
+                mesConnVisual.putExtra(UVoxPlayer.PARAM_PLAYER, mPlayer.getAudioSessionId());
+                sendBroadcast(mesConnVisual);
 				LogPlay.write(UVoxPlayer.LOG_COMMAND_MUSIC, currFileToPlay,
 						LogPlay.STAT_BEGIN);
 			} catch (IllegalStateException e) {
@@ -179,6 +185,9 @@ public class PlayMusicService extends Service {
 		Intent mesPlay = new Intent(UVoxPlayer.BROADCAST_PLAYINFO);
 		mesPlay.putExtra(UVoxPlayer.PLAYINFO, idTag);
 		sendBroadcast(mesPlay);
+        Intent mesConnVisual = new Intent(UVoxPlayer.BROADCAST_VOLUME);
+        mesConnVisual.putExtra(UVoxPlayer.PARAM_PLAYER, 0);
+        sendBroadcast(mesConnVisual);
 		unregisterReceiver(brMusic);
 		isStarted = false;
 		isCreated = false;

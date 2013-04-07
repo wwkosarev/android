@@ -1,11 +1,11 @@
 package com.ultivox.uvoxplayer;
 
+import android.content.Context;
+import android.os.Environment;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-
-import android.content.Context;
-import android.os.Environment;
 
 public class TimeLogInfo {
 
@@ -21,7 +21,6 @@ public class TimeLogInfo {
 		if (!logDir.exists()) {
 			logDir.mkdir();
 		}
-		;
 		String[] logFiles = logDir.list();
 		String logName = android.text.format.DateFormat.format(
 				"logyyyyMMddhhmmss.txt", new java.util.Date()).toString();
