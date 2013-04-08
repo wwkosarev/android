@@ -70,31 +70,35 @@ public class VisualizerView extends View {
         }
 
         // Create the Visualizer object and attach it to our media player.
-        mVisualizer = new Visualizer(sessionId);
-        mVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+        try {
+            mVisualizer = new Visualizer(sessionId);
+            mVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
 
-        // Pass through Visualizer data to VisualizerView
-        Visualizer.OnDataCaptureListener captureListener = new Visualizer.OnDataCaptureListener()
-        {
-            @Override
-            public void onWaveFormDataCapture(Visualizer visualizer, byte[] bytes,
-                                              int samplingRate)
+            // Pass through Visualizer data to VisualizerView
+            Visualizer.OnDataCaptureListener captureListener = new Visualizer.OnDataCaptureListener()
             {
-            }
+                @Override
+                public void onWaveFormDataCapture(Visualizer visualizer, byte[] bytes,
+                                                  int samplingRate)
+                {
+                }
 
-            @Override
-            public void onFftDataCapture(Visualizer visualizer, byte[] bytes,
-                                         int samplingRate)
-            {
-                updateVisualizerFFT(bytes);
-            }
-        };
+                @Override
+                public void onFftDataCapture(Visualizer visualizer, byte[] bytes,
+                                             int samplingRate)
+                {
+                    updateVisualizerFFT(bytes);
+                }
+            };
 
-        mVisualizer.setDataCaptureListener(captureListener,
-                Visualizer.getMaxCaptureRate() / 2, false, true);
+            mVisualizer.setDataCaptureListener(captureListener,
+                    Visualizer.getMaxCaptureRate() / 2, false, true);
 
-        // Enabled Visualizer and disable when we're done with the stream
-        mVisualizer.setEnabled(true);
+            // Enabled Visualizer and disable when we're done with the stream
+            mVisualizer.setEnabled(true);
+        } catch (RuntimeException	 e) {
+            e.printStackTrace();
+        }
         Paint paint = new Paint();
         paint.setStrokeWidth(12f);
         paint.setAntiAlias(true);
