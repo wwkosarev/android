@@ -257,16 +257,24 @@ public class UVoxPlayer extends Activity {
 
                 int result = intent.getIntExtra(PARAM_PLAYER, 0);
                 Log.d(LOG_TAG, String.format("Receive visulizer brodcast with %d extra",result));
-                if ((result==0)&&(playSessionId!=0)) {
-                    // song start to play
-                    playSessionId = result;
-                }
-                if ((result!=0)&&(playSessionId==0)) {
-                    // song stop to play
-                    playSessionId = result;
-                    mVisualizerView.link(playSessionId);
-                } else {
-                    playSessionId = result;
+                try {
+                    if ((result==0)&&(playSessionId!=0)) {
+                        // song start to play
+                        playSessionId = result;
+                        mVisualizerView.clearRenderers();
+                        mVisualizerView.setEnabled(false);
+
+                    }
+                    if ((result!=0)&&(playSessionId==0)) {
+                        // song stop to play
+                        playSessionId = result;
+                        mVisualizerView.setEnabled(true);
+                        mVisualizerView.link(playSessionId);
+                    } else {
+                        playSessionId = result;
+                    }
+                } catch (IllegalStateException	 e) {
+                    e.printStackTrace();
                 }
 
             }
@@ -340,7 +348,12 @@ public class UVoxPlayer extends Activity {
 	}
 
 	public void onClickStop(View v) {
-        mVisualizerView.clearRenderers();
+        try {
+            mVisualizerView.clearRenderers();
+            mVisualizerView.setEnabled(false);
+        } catch (IllegalStateException	 e) {
+            e.printStackTrace();
+        }
         LogPlay.write("button", "Stop", "press");
 		if (taskLogCat != null
 				&& taskLogCat.getStatus() != AsyncTask.Status.FINISHED) {
@@ -369,7 +382,7 @@ public class UVoxPlayer extends Activity {
 			ugTask.cancel(true);
 			ugTask = null;
 		}
-//		stopService(new Intent(this, MainService.class));
+		stopService(new Intent(this, MainService.class));
 	}
 
 	public void onClickNetset(View v) {
