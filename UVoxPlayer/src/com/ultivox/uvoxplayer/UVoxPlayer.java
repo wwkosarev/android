@@ -132,6 +132,26 @@ public class UVoxPlayer extends Activity {
 		super.onCreate(savedInstanceState);
 		Log.d(LOG_TAG, "onCreate");
 		activity = this;
+        String mountState = Environment.getExternalStorageState();
+        int tries = 60;
+        do {
+            if (!mountState.equals(Environment.MEDIA_MOUNTED)) {
+                try {
+                    Thread.sleep(1000); // sleep for a second
+                } catch (InterruptedException e) {
+                    Log.w(LOG_TAG, "Interrupted!");
+                    break;
+                }
+                mountState = Environment.getExternalStorageState();
+            } else {
+                Log.i(LOG_TAG, "External media mounted");
+                break;
+            }
+        } while (--tries > 0);
+        if (tries == 0) {
+            Log.d(LOG_TAG, "Storage not mounted ---- System shutdown!");
+            System.exit(0);
+        }
 		contRes = getContentResolver();
 		setContentView(R.layout.activity_uvox_player);
 		textInfo = (TextView) findViewById(R.id.textInfo);

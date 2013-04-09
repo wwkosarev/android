@@ -99,10 +99,12 @@ public class PlayMusicService extends Service {
 		String pathS = Environment.getExternalStorageDirectory().toString()
 				+ UVoxPlayer.STORAGE + UVoxPlayer.PLAYLISTS + File.separator
 				+ currentPlayList;
-		if ((currentPlayList != null) && (new File(pathS).isDirectory())) {
-			String filesPlayList[] = new File(pathS).list();
+        File f = new File(pathS);
+		if ((currentPlayList != null) && f.isDirectory()) {
+			String filesPlayList[] = f.list();
 			int nb = filesPlayList.length;
 			if (nb < 4) {
+                Log.d(TAG, "Less then 3 tracks to play, exit!");
 				return START_NOT_STICKY;
 			}
 			Random generator = new Random();
