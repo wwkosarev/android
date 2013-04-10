@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.*;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.sqlite.SQLiteDatabase;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.ultivox.uvoxplayer.visualizer.VisualizerView;
 
 import java.io.File;
@@ -54,7 +56,8 @@ public class UVoxPlayer extends Activity {
 	public final static String MESS_EXT = ".mp3";
 
 	public static boolean PREF_EXIST = false;
-	public static boolean VOL_EXIST = false;
+    public static boolean VOL_EXIST = false;
+    public static boolean LAUNCHER_SETS = false;
 	public static String UMS_NB;
 	public static String HOME_URL;
 	public static String CONFIG_URL;
@@ -79,7 +82,8 @@ public class UVoxPlayer extends Activity {
 	public static String ID;
 
 	public final static String MAIN_PREF = "UVoxPref";
-	public final static String VOL_PREF = "VolumeUVoxPref";
+    public final static String VOL_PREF = "VolumeUVoxPref";
+    public final static String LAUNCH_PREF = "LaunchUVoxPref";
 	public final static String LOG_COMMAND_MUSIC = "music";
 	public final static String LOG_COMMAND_MESS = "mess";
 	public final static String BROADCAST_PLAYINFO = "com.ultivox.uvoxplayer.play";
@@ -87,6 +91,11 @@ public class UVoxPlayer extends Activity {
 	public final static String BROADCAST_MUSICINFO = "com.ultivox.uvoxplayer.music";
     public final static String BROADCAST_MESSINFO = "com.ultivox.uvoxplayer.message";
     public final static String BROADCAST_VOLUME = "com.ultivox.uvoxplayer.volume";
+
+    public final static String reInstallUri = "com.ultivox.reinstall";
+    public final static String reBootUri = "com.ultivox.rebootapp";
+    public final static String launcherUri = "com.android.launcher";
+    public final static String reMoveFile = "Launcher2.apk";
 
 	public final static String BROADCAST_SHOW = "com.ultivox.uvoxplayer.show";
 	public final static String PARAM_TEXT = "text";
@@ -100,7 +109,8 @@ public class UVoxPlayer extends Activity {
 	public static TextView textInfo;
 	public static SharedPreferences settings;
 	public static SharedPreferences volumes;
-	private SeekBar musicSeekBar = null;
+    public static SharedPreferences launchers;
+    private SeekBar musicSeekBar = null;
 	private SeekBar messageSeekBar = null;
 	TextView serviceInfo;
 	final static String LOG_TAG = "UVoxPlayerLogs";
@@ -115,8 +125,9 @@ public class UVoxPlayer extends Activity {
 	private TestConnectionTask tcTask = null;
 	private DownloadTask dlTask = null;
 	private UpgradeTask ugTask = null;
+    private EnviromentSetupTask enviromentTask = null;
 
-	private BroadcastReceiver br;
+    private BroadcastReceiver br;
     private BroadcastReceiver brFinish;
     private BroadcastReceiver brVolume;
 
@@ -126,6 +137,7 @@ public class UVoxPlayer extends Activity {
 
     private VisualizerView mVisualizerView;
     private static int playSessionId = 0;
+    private static boolean launcherMainOff = true;
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -160,6 +172,8 @@ public class UVoxPlayer extends Activity {
 		initGlobals(settings);
 		volumes = getSharedPreferences(VOL_PREF, MODE_PRIVATE);
 		initVolumes(volumes);
+        launchers = getSharedPreferences(LAUNCH_PREF, MODE_PRIVATE);
+        initLaunchers(launchers);
 		createAppDirs();
 		brStatus = new BroadcastReceiver() {
 			// �������� ��� ��������� ���������
@@ -333,6 +347,28 @@ public class UVoxPlayer extends Activity {
 								.getTimeInMillis()) / 1000));
 		intentMainService = new Intent(this, MainService.class);
 		startService(intentMainService);
+        if (!appInstalledOrNot(reBootUri) || !appInstalledOrNot(reInstallUri)) {
+            if (enviromentTask == null) {
+                enviromentTask = new EnviromentSetupTask(this);
+                enviromentTask.runTask(null);
+            }
+        }
+        if ((appInstalledOrNot(launcherUri))&&launcherMainOff) {
+            String[] commandMove = new String[]{"su", "-c",
+                    "busybox mv /system/app/" + reMoveFile + " /mnt/sdcard/Download/" };
+            Log.d(LOG_TAG, commandMove[0] + " " + commandMove[1] + " " + commandMove[2]);
+            Process reMoveProc;
+            try {
+                reMoveProc = Runtime.getRuntime().exec(commandMove);
+                int res = reMoveProc.waitFor();
+                Log.d(LOG_TAG, "Result of removing Launcher: " + res);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
 	}
 
 	@Override
@@ -531,16 +567,54 @@ public class UVoxPlayer extends Activity {
 		taskSettings.runTask(null);
 	}
 
-	public void onAbout(MenuItem item) throws ClassNotFoundException,
-			NoSuchMethodException {
-		LogPlay.write("button", "About option", "press");
-		System.exit(0);
-	}
+    public void onExit(MenuItem item) throws ClassNotFoundException,
+            NoSuchMethodException {
+        LogPlay.write("button", "About option", "press");
+        System.exit(0);
+    }
+
+    public void onRemove(MenuItem item)  {
+
+        LogPlay.write("button", "Remove launcher", "press");
+        launcherMainOff = true;
+        SharedPreferences.Editor editor = launchers.edit();
+        editor.putBoolean("LAUNCHER_MAIN_OFF", launcherMainOff);
+        editor.commit();
+        if ((appInstalledOrNot(launcherUri))&&launcherMainOff) {
+            String[] commandMove = new String[]{"su", "-c",
+                    "busybox mv /system/app/" + reMoveFile + " /mnt/sdcard/Download/" };
+            Log.d(LOG_TAG, commandMove[0] + " " + commandMove[1] + " " + commandMove[2]);
+            Process reMoveProc;
+            try {
+                reMoveProc = Runtime.getRuntime().exec(commandMove);
+                int res = reMoveProc.waitFor();
+                Log.d(LOG_TAG, "Result of removing Launcher: " + res);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void onShowVal(MenuItem item)  {
+
+        LogPlay.write("button", "Show values", "press");
+        String toastLine = "Serial number: "+ UMS_NB;
+        Toast.makeText(getApplicationContext(),
+                toastLine, Toast.LENGTH_LONG).show();
+
+    }
 
 	public void onRestore(MenuItem item) {
 
-		LogPlay.write("button", "About option", "press");
-		String[] command = new String[] {"su", "-c", "busybox install /mnt/sdcard/Download/Launcher2.apk /system/app/"};
+        launcherMainOff = false;
+        SharedPreferences.Editor editor = launchers.edit();
+        editor.putBoolean("LAUNCHER_MAIN_OFF", launcherMainOff);
+        editor.commit();
+		LogPlay.write("button", "Restore launcher", "press");
+		String[] command = new String[] {"su", "-c",
+                "busybox install /mnt/sdcard/Download/" + reMoveFile + " /system/app/"};
 		Log.d(LOG_TAG,command[0]+" "+command[1]+" "+command[2]);
 		Process reInsProc;
 		try {
@@ -556,6 +630,11 @@ public class UVoxPlayer extends Activity {
 			e.printStackTrace();
 		}
 	}
+
+
+    public void onAbout(MenuItem item)  {
+
+    }
 
 	@Override
 	public void onPause() {
@@ -658,23 +737,37 @@ public class UVoxPlayer extends Activity {
 		}
 	}
 
-	public void initVolumes(SharedPreferences set) {
+	public void initLaunchers(SharedPreferences set) {
 
-		Log.d(LOG_TAG, "Adjust volumes");
-		if (set.getBoolean("VOL_EXIST", false)) {
-			VOL_EXIST = set.getBoolean("VOL_EXIST", VOL_EXIST);
-			volumeMusic = set.getFloat("MUSIC", 1);
-			volumeMessage = set.getFloat("MESSAGE", 1);
-		} else {
-			SharedPreferences.Editor editor = set.edit();
-			VOL_EXIST = true;
-			editor.putBoolean("VOL_EXIST", VOL_EXIST);
-			editor.putFloat("MUSIC", 1);
-			editor.putFloat("MESSAGE", 1);
-			editor.commit();
-		}
-	}
+        Log.d(LOG_TAG, "Set launchers");
+        if (set.getBoolean("LAUNCHER_SETS", false)) {
+            LAUNCHER_SETS = set.getBoolean("LAUNCHER_SETS", LAUNCHER_SETS);
+            launcherMainOff = set.getBoolean("LAUNCHER_MAIN_OFF", true);
+        } else {
+            SharedPreferences.Editor editor = set.edit();
+            LAUNCHER_SETS = true;
+            editor.putBoolean("LAUNCHER_SETS", LAUNCHER_SETS);
+            editor.putBoolean("LAUNCHER_MAIN_OFF", launcherMainOff);
+            editor.commit();
+        }
+    }
 
+    public void initVolumes(SharedPreferences set) {
+
+        Log.d(LOG_TAG, "Adjust volumes");
+        if (set.getBoolean("VOL_EXIST", false)) {
+            VOL_EXIST = set.getBoolean("VOL_EXIST", VOL_EXIST);
+            volumeMusic = set.getFloat("MUSIC", 1);
+            volumeMessage = set.getFloat("MESSAGE", 1);
+        } else {
+            SharedPreferences.Editor editor = set.edit();
+            VOL_EXIST = true;
+            editor.putBoolean("VOL_EXIST", VOL_EXIST);
+            editor.putFloat("MUSIC", 1);
+            editor.putFloat("MESSAGE", 1);
+            editor.commit();
+        }
+    }
 	private void createAppDirs() {
 
 		String base = Environment.getExternalStorageDirectory().toString()
@@ -696,4 +789,21 @@ public class UVoxPlayer extends Activity {
 			dir.mkdir();
 		}
 	}
+
+    private boolean appInstalledOrNot(String uri)
+    {
+        PackageManager pm = getPackageManager();
+        boolean app_installed = false;
+        try
+        {
+            PackageInfo pi = pm.getPackageInfo(uri, PackageManager.GET_ACTIVITIES);
+            Log.d(LOG_TAG, pi.packageName);
+            app_installed = true;
+        }
+        catch (PackageManager.NameNotFoundException e)
+        {
+            app_installed = false;
+        }
+        return app_installed ;
+    }
 }

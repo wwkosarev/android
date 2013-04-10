@@ -4,11 +4,13 @@
     <string name="info">Information line!</string>
     <string name="menu_about">About</string>
     <string name="menu_update">Upgrade software</string>
-    <string name="menu_logcat">Logcat</string>
-    <string name="menu_logplay">Logplay</string>
+    <string name="menu_system">System settings</string>
+    <string name="menu_exit">Exit</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_terminal">Terminal</string>
+    <string name="menu_remove">Remove Launcher</string>
     <string name="menu_restore">Restore Launcher</string>
+    <string name="menu_showval">Show values</string>
     <string name="title_activity_uvox_player">UVoxPlayer</string>
     <string name="start">Play</string>
     <string name="stop">Stop</string>

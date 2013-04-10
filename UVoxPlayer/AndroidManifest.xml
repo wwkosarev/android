@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ultivox.uvoxplayer"
-    android:versionCode="8"
-    android:versionName="1.1.4"
+    android:versionCode="9"
+    android:versionName="1.2.0"
     >
 
     <uses-sdk
@@ -20,7 +20,8 @@
         android:theme="@android:style/Theme.Holo" >
         <activity
             android:name="UVoxPlayer"
-            android:label="@string/title_activity_uvox_player" >
+            android:label="@string/title_activity_uvox_player"
+            android:launchMode="singleInstance" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

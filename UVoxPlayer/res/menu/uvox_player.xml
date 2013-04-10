@@ -5,25 +5,32 @@
         android:onClick="onUpgrade" 
         android:showAsAction="never">
     </item>
-    <item android:id="@+id/terminal" 
+    <item android:id="@+id/system"
         android:orderInCategory="100" 
-        android:title='@string/menu_terminal' 
-        android:onClick="onTerminal" 
+        android:title='@string/menu_system'
         android:showAsAction="never">
+        <menu>
+            <item android:id="@+id/remove"
+                android:title="@string/menu_remove"
+                android:orderInCategory="100"
+                android:showAsAction="never"
+                android:onClick="onRemove">
+            </item>
+            <item android:id="@+id/restore"
+                android:title="@string/menu_restore"
+                android:orderInCategory="100"
+                android:showAsAction="never"
+                android:onClick="onRestore">
+            </item>
+            <item android:id="@+id/showval"
+                 android:title="@string/menu_showval"
+                android:orderInCategory="100"
+                android:showAsAction="never"
+                android:onClick="onShowVal">
+            </item>
+        </menu>
     </item>
-    <item android:id="@+id/logcat" 
-        android:orderInCategory="100" 
-        android:title='@string/menu_logcat' 
-        android:onClick="onLogCat" 
-        android:showAsAction="never">
-    </item>
-        <item android:id="@+id/logplay" 
-        android:orderInCategory="100" 
-        android:title='@string/menu_logplay'
-        android:onClick="onLogPlay" 
-        android:showAsAction="never">
-    </item>
-    <item android:id="@+id/settings" 
+    <item android:id="@+id/settings"
         android:orderInCategory="100" 
         android:title='@string/menu_settings'
         android:onClick="onSettings" 
@@ -34,6 +41,12 @@
         android:orderInCategory="100"
         android:showAsAction="never" 
         android:onClick="onAbout">
+    </item>
+    <item android:id="@+id/exit"
+          android:orderInCategory="100"
+          android:title='@string/menu_exit'
+          android:onClick="onExit"
+          android:showAsAction="never">
     </item>
     
     
