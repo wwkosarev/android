@@ -1,15 +1,13 @@
 package com.ultivox.uvoxplayer;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.concurrent.TimeUnit;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
+import android.os.Environment;
+import android.util.Log;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
@@ -20,14 +18,11 @@ import org.apache.http.params.HttpParams;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
-import android.os.Environment;
-import android.util.Log;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 public class DownloadTask extends AsyncTask<String, String, String> implements
 		BackgroundTask {
@@ -413,12 +408,12 @@ public class DownloadTask extends AsyncTask<String, String, String> implements
 	protected void onPostExecute(String result) {
 
 		super.onPostExecute(result);
-		Intent mesServ = new Intent(MainService.BROADCAST_ACT_SERVER);
+		Intent mesServ = new Intent(UVoxPlayer.BROADCAST_ACT_SERVER);
 		if (result != null) {
-			mesServ.putExtra(MainService.PARAM_RESULT, MainService.SERVER_CONTINUE);
+			mesServ.putExtra(UVoxPlayer.PARAM_RESULT, UVoxPlayer.SERVER_CONTINUE);
 			publishProgress("");
 		} else {
-			mesServ.putExtra(MainService.PARAM_RESULT, MainService.SERVER_ERROR);
+			mesServ.putExtra(UVoxPlayer.PARAM_RESULT, UVoxPlayer.SERVER_ERROR);
 			publishProgress("Connecting problem. Please try again later.");
 		}
 		tContext.sendBroadcast(mesServ);

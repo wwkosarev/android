@@ -1,9 +1,5 @@
 package com.ultivox.uvoxplayer;
 
-import java.util.Calendar;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -12,6 +8,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.IBinder;
 import android.util.Log;
+
+import java.util.Calendar;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SchedulerService extends Service {
 
@@ -23,9 +23,9 @@ public class SchedulerService extends Service {
 	int delta = 1000; //in mills
 	Calendar timeNow;
 	Calendar timeVar;
-	Calendar timeDayBegin;	// Дата начала дня
-	Calendar timeScheduler; // Дата+час которая используется для программирования
-							// следующего запуска данной службы.
+	Calendar timeDayBegin;	// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
+	Calendar timeScheduler; // пїЅпїЅпїЅпїЅ+пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+							// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
 	
 	private ExecutorService esMessageScheduler;
 
@@ -60,7 +60,7 @@ public class SchedulerService extends Service {
 
 	class ScheduleMessages implements Runnable {
 
-		// переменные для query
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ query
 		String[] columns = null;
 		String selection = null;
 		String[] selectionArgs = null;
@@ -69,7 +69,7 @@ public class SchedulerService extends Service {
 		String orderBy = null;
 		private Context upContext;
 
-		// курсор
+		// пїЅпїЅпїЅпїЅпїЅпїЅ
 		Cursor curMessage = null;
 		AlarmManager alarmMgr;
 
@@ -141,10 +141,10 @@ public class SchedulerService extends Service {
 							Log.d(LOG_TAG, String.format("Time to AlarmManager %d", varTime));
 							timeVar.setTimeInMillis(varTime);
 //							Log.d(LOG_TAG,timeVar.toString());
-							Intent mesint = new Intent(MainService.BROADCAST_ACT_SCH);
-							mesint.putExtra(MainService.PARAM_RESULT,
-									MainService.STATUS_MESSAGE);
-							mesint.putExtra(MainService.PARAM_NAME, curMessage.getInt(curMessage.getColumnIndex(NetDbHelper.MESSAGES_MESS_ID)));
+							Intent mesint = new Intent(UVoxPlayer.BROADCAST_ACT_SCH);
+							mesint.putExtra(UVoxPlayer.PARAM_RESULT,
+                                    UVoxPlayer.STATUS_MESSAGE);
+							mesint.putExtra(UVoxPlayer.PARAM_NAME, curMessage.getInt(curMessage.getColumnIndex(NetDbHelper.MESSAGES_MESS_ID)));
 							PendingIntent pendingIntent = PendingIntent.getBroadcast(
 									upContext, i, mesint, 0);
 							alarmMgr.cancel(pendingIntent);
@@ -160,12 +160,12 @@ public class SchedulerService extends Service {
 			}
 			// if last connection to server out off limit
 			long nowMoment = Calendar.getInstance().getTimeInMillis();
-			if ((nowMoment - MainService.lastConnection - UVoxPlayer.INTERVAL_CONNECTION) >= 0) {
+			if ((nowMoment - UVoxPlayer.lastConnection - UVoxPlayer.INTERVAL_CONNECTION) >= 0) {
 				Log.d(LOG_TAG,"It's too many time afte last server connection");
 				// Set 5 sec alarm to server connection
 				AlarmManager alarmConnectServer = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-				Intent intStartServer = new Intent(MainService.BROADCAST_ACT_SERVER);
-				intStartServer.putExtra(MainService.PARAM_RESULT, MainService.SERVER_START);
+				Intent intStartServer = new Intent(UVoxPlayer.BROADCAST_ACT_SERVER);
+				intStartServer.putExtra(UVoxPlayer.PARAM_RESULT, UVoxPlayer.SERVER_START);
 				PendingIntent pendIntentStartServer = PendingIntent.getBroadcast(upContext, 0, intStartServer, 0);
 				alarmConnectServer.set(AlarmManager.RTC_WAKEUP, nowMoment+5000, pendIntentStartServer);
 			}
@@ -173,18 +173,18 @@ public class SchedulerService extends Service {
 		}
 
 		void stop() {
-			Intent mesint = new Intent(MainService.BROADCAST_ACT_SCH);
-			mesint.putExtra(MainService.PARAM_RESULT,
-					MainService.STATUS_RELAUNCH);
+			Intent mesint = new Intent(UVoxPlayer.BROADCAST_ACT_SCH);
+			mesint.putExtra(UVoxPlayer.PARAM_RESULT,
+                    UVoxPlayer.STATUS_RELAUNCH);
 			PendingIntent pendingIntent = PendingIntent.getBroadcast(upContext,
 					0, mesint, 0);
 			alarmMgr.set(AlarmManager.RTC_WAKEUP,
 					timeScheduler.getTimeInMillis(), pendingIntent);
-			curMessage.close();
+//			curMessage.close();
 			Log.d(LOG_TAG, "Stop triggering message scheduler");
-			Intent mesEndInt = new Intent(MainService.BROADCAST_ACT_SCH);
-			mesEndInt.putExtra(MainService.PARAM_RESULT,
-					MainService.STATUS_SCHEDUL_END);
+			Intent mesEndInt = new Intent(UVoxPlayer.BROADCAST_ACT_SCH);
+			mesEndInt.putExtra(UVoxPlayer.PARAM_RESULT,
+                    UVoxPlayer.STATUS_SCHEDUL_END);
 			sendBroadcast(mesEndInt);
 		}
 

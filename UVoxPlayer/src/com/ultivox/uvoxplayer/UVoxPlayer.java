@@ -7,10 +7,12 @@ import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
@@ -24,6 +26,10 @@ import com.ultivox.uvoxplayer.visualizer.VisualizerView;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UVoxPlayer extends Activity {
 
@@ -139,6 +145,45 @@ public class UVoxPlayer extends Activity {
     private static int playSessionId = 0;
     private static boolean launcherMainOff = true;
 
+    public final static String BROADCAST_ACT_SCH = "com.ultivox.uvoxplayer.main";
+    public final static String BROADCAST_ACT_SERVER = "com.ultivox.uvoxplayer.server";
+
+    public final static int STATUS_MESSAGE = 100;
+    public final static int STATUS_RELAUNCH = 200;
+    public final static int STATUS_MESSAGE_STOP = 300;
+    public final static int STATUS_PLAY_STOP = 400;
+    public final static int STATUS_FADEOUT = 500;
+    public final static int STATUS_FADEIN = 600;
+    public final static int STATUS_SCHEDUL_END = 700;
+    public final static int STATUS_PLAYLIST_EMPTY = 800;
+
+    public final static int SERVER_START = 1000;
+    public final static int SERVER_CONTINUE = 2000;
+    public final static int SERVER_STOP = 3000;
+    public final static int SERVER_ERROR = 4000;
+    public final static int SERVER_RELOAD = 5000;
+
+    public final static String PARAM_RESULT = "result";
+    public final static String PARAM_NAME = "name";
+
+    PlayMusicService playService;
+    ServiceConnection sConn;
+    boolean boundPlay = false;
+    boolean fade = false;
+    boolean playlistEmpty = false;
+    boolean playDelay = false;
+    Intent intentPlay;
+    Intent intentSchedule;
+    Intent intentMessage;
+
+    public static long lastConnection = 0;
+    private static boolean isPlay = false;
+    BroadcastReceiver brMain, brServer;
+    int mess_name = 0;
+    Queue<AsyncTask<String, String, String>> taskQueue = new LinkedList<AsyncTask<String, String, String>>();
+    TimeLogInfo tLogCat = null;
+    protected boolean isConnectionSession = false;
+    protected boolean reLoad = false;
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -176,6 +221,285 @@ public class UVoxPlayer extends Activity {
         launchers = getSharedPreferences(LAUNCH_PREF, MODE_PRIVATE);
         initLaunchers(launchers);
 		createAppDirs();
+
+        intentPlay = new Intent(this, PlayMusicService.class);
+        intentSchedule = new Intent(this, SchedulerService.class);
+        intentMessage = new Intent(this, PlayMessageService.class);
+        sConn = new ServiceConnection() {
+
+            public void onServiceConnected(ComponentName name, IBinder binder) {
+                Log.d(LOG_TAG, "onServiceConnected");
+                playService = ((PlayMusicService.PlayBinder) binder).getService();
+                boundPlay = true;
+            }
+
+            public void onServiceDisconnected(ComponentName name) {
+                Log.d(LOG_TAG, "onServiceDisconnected");
+                boundPlay = false;
+            }
+        };
+        brMain = new BroadcastReceiver() {
+            // �������� ��� ��������� ���������
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                // Analyze extras of broadcast intend received
+
+                int result = intent.getIntExtra(PARAM_RESULT, 0);
+                switch (result) {
+                    case STATUS_MESSAGE: {
+                        // 1st - make fade-out, if message file exists.
+                        mess_name = intent.getIntExtra(PARAM_NAME, 0);
+                        pushAlltoQueue(mess_name);
+                        if (!fade) {
+                            fade = true;
+                            Log.d(LOG_TAG, "It's time for message. Id of message:"
+                                    + mess_name);
+                            playService.fadeOut();
+                        }
+                        break;
+                    }
+                    case STATUS_FADEOUT: {
+                        // play message
+                        Log.d(LOG_TAG, "FadeOut made. File of message:" + mess_name);
+                        startService(new Intent(context, PlayMessageService.class)
+                                .putExtra(PARAM_NAME, mess_name));
+                        break;
+                    }
+                    case STATUS_FADEIN: {
+                        // the end of fade-out fade-in procedure
+                        if (playDelay) { // Reload PlayMusicService if playDelay
+                            // triggered on.
+                            startService(intentPlay);
+                            bindService(intentPlay, sConn, 0);
+                            playDelay = false;
+                        }
+                        fade = false;
+                        break;
+                    }
+                    case STATUS_RELAUNCH: {
+                        // re-launch Scheduler Message Service
+                        Log.d(LOG_TAG, "Now reloading Message Scheduler");
+                        startService(intentSchedule);
+                        if (playlistEmpty) {
+                            Log.d(LOG_TAG, "Reload PlayMisicService");
+                            startService(intentPlay);
+                            bindService(intentPlay, sConn, 0);
+                            playlistEmpty = false;
+                        }
+                        break;
+                    }
+                    case STATUS_PLAYLIST_EMPTY: {
+                        // re-launch Scheduler Message Service
+                        Log.d(LOG_TAG, "There's no playlist for current hour");
+                        playlistEmpty = true;
+                        if (boundPlay) {
+                            unbindService(sConn);
+                            boundPlay = false;
+                        }
+                        stopService(intentPlay);
+                        break;
+                    }
+                    case STATUS_MESSAGE_STOP: {
+                        // message ended, make fade-in
+                        Log.d(LOG_TAG, "Message ended");
+                        playService.fadeIn();
+                        break;
+                    }
+                    case STATUS_PLAY_STOP: {
+                        // message ended, let's play music again
+                        Log.d(LOG_TAG,
+                                "Play new track"
+                                        + String.format("   boundPlay=%b",
+                                        boundPlay));
+                        if (boundPlay) {
+                            unbindService(sConn);
+                            boundPlay = false;
+                        }
+                        stopService(intentPlay);
+                        if (fade) { // end of track in time with fade-out fade-in
+                            // procedure - stop delayPlayMusicService, but
+                            // delay it restart until this procedure will
+                            // ended
+                            playDelay = true;
+                        } else {
+                            startService(intentPlay);
+                            bindService(intentPlay, sConn, 0);
+                        }
+                        break;
+                    }
+                    case STATUS_SCHEDUL_END: {
+                        stopService(intentSchedule);
+                        break;
+                    }
+                }
+            }
+
+        };
+        IntentFilter intFilt = new IntentFilter(BROADCAST_ACT_SCH);
+        registerReceiver(brMain, intFilt);
+
+        brServer = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                int result = intent.getIntExtra(PARAM_RESULT, 0);
+                Log.d(LOG_TAG,
+                        String.format("Connect intent recieved #%d", result));
+                AlarmManager alarmConnectServer = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                switch (result) {
+                    case SERVER_START: {
+                        if (UVoxPlayer.LOGCAT_ON.equals("on")) {
+                            tLogCat = new TimeLogInfo(context);
+                            taskQueue.offer(new LogCatTask(context));
+                        } else {
+                            String logDirPath = Environment.getExternalStorageDirectory()
+                                    .toString() + UVoxPlayer.LOGCAT_DIR;
+                            File logDir = new File(logDirPath);
+                            if (logDir.exists()) {
+                                String[] logFiles = logDir.list();
+                                for (int i=0; i<logFiles.length; i++ ) {
+                                    File f = new File(logDirPath + File.separator + logFiles[i]);
+                                    if (f.exists()) {
+                                        f.delete();
+                                    }
+                                }
+                            }
+                        }
+                        if (UVoxPlayer.LOGPLAY_ON.equals("on")) {
+                            taskQueue.offer(new LogPlayTask(context));
+                        }
+                        if (UVoxPlayer.UPGRADE_ON.equals("on")) {
+                            taskQueue.offer(new UpgradeTask(context));
+                        }
+                        if (UVoxPlayer.DOWNLOAD_ON.equals("on")) {
+                            taskQueue.offer(new DownloadTask(context));
+                        }
+                        taskQueue.offer(new SettingsTask(context));
+                        isConnectionSession = true;
+                        LogPlay.write("system", "Server connection", "start");
+                        SysInfo sys = new SysInfo();
+                        LogPlay.write("system", sys.getMemFree(), "info");
+                        LogPlay.write("system", sys.getIntMemFree(), "info");
+                        Intent mesServ = new Intent(BROADCAST_ACT_SERVER);
+                        mesServ.putExtra(PARAM_RESULT, SERVER_CONTINUE);
+                        sendBroadcast(mesServ);
+                        break;
+                    }
+                    case SERVER_CONTINUE: {
+                        if (!isConnectionSession) {
+                            Intent mesServ = new Intent(BROADCAST_ACT_SERVER);
+                            mesServ.putExtra(PARAM_RESULT, SERVER_STOP);
+                            sendBroadcast(mesServ);
+                            break;
+                        }
+                        AsyncTask<String, String, String> currentTask = taskQueue
+                                .poll();
+                        if (currentTask != null) {
+                            if (tLogCat != null) {
+                                currentTask.execute(tLogCat.getLogFile());
+                            } else {
+                                currentTask.execute();
+                            }
+                        } else {
+                            Intent mesServ = new Intent(BROADCAST_ACT_SERVER);
+                            mesServ.putExtra(PARAM_RESULT, SERVER_STOP);
+                            sendBroadcast(mesServ);
+                        }
+                        break;
+                    }
+                    case SERVER_STOP: {
+                        if (reLoad) {
+                            Log.d(LOG_TAG, "Now process will be reloded!");
+                            // NOTsilent!!!
+                            // Intent intent = new Intent(Intent.ACTION_VIEW);
+                            // intent.setDataAndType(Uri.fromFile(new
+                            // File("/mnt/sdcard/Download/UVoxPlayer.apk")),
+                            // "application/vnd.android.package-archive");
+                            // intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); //
+                            // without this flag android returned a intent error!
+                            // this.startActivity(intent);
+                            // Silent
+                            Intent mesFinish = new Intent(UVoxPlayer.BROADCAST_FINISH);
+                            sendBroadcast(mesFinish);
+                            reLoad = false;
+                            return;
+                        }
+                        LogPlay.write("system", "Server connection", "stop");
+                        Intent intStartServer = new Intent(BROADCAST_ACT_SERVER);
+                        intStartServer.putExtra(PARAM_RESULT, SERVER_START);
+                        PendingIntent pendIntentStartServer = PendingIntent
+                                .getBroadcast(context, 0, intStartServer, 0);
+                        long nextTimeConnect = 0;
+                        if (UVoxPlayer.INTERVAL_CONNECTION > 0) {
+                            nextTimeConnect = Calendar.getInstance()
+                                    .getTimeInMillis()
+                                    + UVoxPlayer.INTERVAL_CONNECTION;
+                        } else if (!UVoxPlayer.TIME_CONNECTION.equals("")) {
+                            try {
+                                nextTimeConnect = dateParseTimeRegExp(UVoxPlayer.TIME_CONNECTION);
+                            } catch (IllegalArgumentException e) {
+                                nextTimeConnect = Calendar.getInstance()
+                                        .getTimeInMillis()
+                                        + UVoxPlayer.INTERVAL_CONNECTION_STAT;
+                                e.printStackTrace();
+                            }
+                        } else {
+                            nextTimeConnect = Calendar.getInstance()
+                                    .getTimeInMillis()
+                                    + UVoxPlayer.INTERVAL_CONNECTION_STAT;
+                        }
+                        alarmConnectServer.set(AlarmManager.RTC_WAKEUP,
+                                nextTimeConnect, pendIntentStartServer);
+                        isConnectionSession = false;
+                        lastConnection = Calendar.getInstance().getTimeInMillis();
+                        Log.d(LOG_TAG,
+                                String.format(
+                                        "Set alarm to next server connection on %d sec delay",
+                                        (nextTimeConnect - Calendar.getInstance()
+                                                .getTimeInMillis()) / 1000));
+                        break;
+                    }
+                    case SERVER_ERROR: {
+                        LogPlay.write("system", "Server connection", "error");
+                        if (!isConnectionSession) {
+                            break;
+                        }
+                        Intent intStartServer = new Intent(BROADCAST_ACT_SERVER);
+                        intStartServer.putExtra(PARAM_RESULT, SERVER_START);
+                        PendingIntent pendIntentStartServer = PendingIntent
+                                .getBroadcast(context, 0, intStartServer, 0);
+                        long nextTimeConnect = 0;
+                        nextTimeConnect = Calendar.getInstance().getTimeInMillis()
+                                + UVoxPlayer.INTERVAL_CONNECTION_STAT;
+                        alarmConnectServer.set(AlarmManager.RTC_WAKEUP,
+                                nextTimeConnect, pendIntentStartServer);
+                        isConnectionSession = false;
+                        Log.d(LOG_TAG,
+                                String.format(
+                                        "Task queue ERROR! Set alarm to next server connection on %d (hour delay)",
+                                        (nextTimeConnect - Calendar.getInstance()
+                                                .getTimeInMillis()) / 1000));
+                        break;
+                    }
+                    case SERVER_RELOAD: {
+                        reLoad = true;
+                        Intent mesServ = new Intent(BROADCAST_ACT_SERVER);
+                        mesServ.putExtra(PARAM_RESULT, SERVER_CONTINUE);
+                        sendBroadcast(mesServ);
+                        break;
+                    }
+                }
+
+            }
+        };
+        // Set filter for server BroadcastReceiver
+        IntentFilter intFiltServer = new IntentFilter(BROADCAST_ACT_SERVER);
+        // turn-on server BroadcastReceiver
+        registerReceiver(brServer, intFiltServer);
+
 		brStatus = new BroadcastReceiver() {
 			// �������� ��� ��������� ���������
 
@@ -262,9 +586,9 @@ public class UVoxPlayer extends Activity {
 			}
 		};
 		// ������� ������ ��� BroadcastReceiver
-		IntentFilter intFilt = new IntentFilter(BROADCAST_PLAYINFO);
+		IntentFilter intFiltPlay = new IntentFilter(BROADCAST_PLAYINFO);
 		// ������������ (��������) BroadcastReceiver
-		registerReceiver(br, intFilt);
+		registerReceiver(br, intFiltPlay);
 
 		brFinish = new BroadcastReceiver() {
 			// �������� ��� ��������� ���������
@@ -294,19 +618,17 @@ public class UVoxPlayer extends Activity {
                 Log.d(LOG_TAG, String.format("Receive visulizer brodcast with %d extra",result));
                 try {
                     if ((result==0)&&(playSessionId!=0)) {
-                        // song start to play
+                        // song stop to play
                         playSessionId = result;
                         mVisualizerView.setVisibility (View.INVISIBLE);
                         mVisualizerView.setOff();
                         mVisualizerView.release();
                     }
                     if ((result!=0)&&(playSessionId==0)) {
-                        // song stop to play
+                        // song start to play
                         playSessionId = result;
                         mVisualizerView.link(playSessionId);
                         mVisualizerView.setVisibility (View.VISIBLE);
-                    } else {
-                        playSessionId = result;
                     }
                 } catch (IllegalStateException	 e) {
                     e.printStackTrace();
@@ -317,9 +639,8 @@ public class UVoxPlayer extends Activity {
         IntentFilter intVolume = new IntentFilter(BROADCAST_VOLUME);
         registerReceiver(brVolume, intVolume);
 
-		Intent intStartServer = new Intent(MainService.BROADCAST_ACT_SERVER);
-		intStartServer.putExtra(MainService.PARAM_RESULT,
-				MainService.SERVER_START);
+		Intent intStartServer = new Intent(BROADCAST_ACT_SERVER);
+		intStartServer.putExtra(PARAM_RESULT, SERVER_START);
 		PendingIntent pendIntentStartServer = PendingIntent.getBroadcast(this,
 				0, intStartServer, 0);
 		long nextTimeConnect = 0;
@@ -329,8 +650,7 @@ public class UVoxPlayer extends Activity {
 					+ INTERVAL_CONNECTION;
 		} else if (!TIME_CONNECTION.equals("")) {
 			try {
-				nextTimeConnect = MainService
-						.dateParseTimeRegExp(TIME_CONNECTION);
+				nextTimeConnect =dateParseTimeRegExp(TIME_CONNECTION);
 			} catch (IllegalArgumentException e) {
 				nextTimeConnect = Calendar.getInstance().getTimeInMillis()
 						+ INTERVAL_CONNECTION_STAT;
@@ -346,8 +666,13 @@ public class UVoxPlayer extends Activity {
 				.format("Set alarm to next server connection after %d sec",
 						(nextTimeConnect - Calendar.getInstance()
 								.getTimeInMillis()) / 1000));
-		intentMainService = new Intent(this, MainService.class);
-		startService(intentMainService);
+        // Start all services
+        Log.d(LOG_TAG, "Start all services");
+        startService(intentSchedule);
+        startService(intentPlay);
+        bindService(intentPlay, sConn, 0);
+        isPlay = true;
+
         if (!appInstalledOrNot(reBootUri) || !appInstalledOrNot(reInstallUri)) {
             if (enviromentTask == null) {
                 enviromentTask = new EnviromentSetupTask(this);
@@ -392,8 +717,13 @@ public class UVoxPlayer extends Activity {
 
 	public void onClickStart(View v) {
 		LogPlay.write("button", "Start", "press");
-		startService(new Intent(this, MainService.class));
-	}
+        if (!isPlay) {
+            startService(intentSchedule);
+            startService(intentPlay);
+            bindService(intentPlay, sConn, 0);
+            isPlay = true;
+        }
+    }
 
 	public void onClickStop(View v) {
         try {
@@ -430,8 +760,15 @@ public class UVoxPlayer extends Activity {
 			ugTask.cancel(true);
 			ugTask = null;
 		}
-		stopService(new Intent(this, MainService.class));
-	}
+        if (boundPlay) {
+            unbindService(sConn);
+            boundPlay = false;
+        }
+        isPlay = false;
+        stopService(intentSchedule);
+        stopService(intentPlay);
+        stopService(intentMessage);
+    }
 
 	public void onClickNetset(View v) {
 		LogPlay.write("button", "Net setting", "press");
@@ -618,11 +955,12 @@ public class UVoxPlayer extends Activity {
 	public void onDestroy() {
 
 		super.onDestroy();
-		stopService(intentMainService);
 		currDb.close();
 		unregisterReceiver(br);
 		unregisterReceiver(brFinish);
-		unregisterReceiver(brStatus);
+        unregisterReceiver(brStatus);
+        unregisterReceiver(brServer);
+        unregisterReceiver(brMain);
 		Log.d(LOG_TAG, "Player stoped");
 	}
 
@@ -776,5 +1114,63 @@ public class UVoxPlayer extends Activity {
             app_installed = false;
         }
         return app_installed ;
+    }
+
+    private void pushAlltoQueue(int messSetId) {
+
+        final String TAG = "pushAlltoQueue";
+        String[] columns = new String[] { NetDbHelper.MESS_SETS_MESS_ID,
+                NetDbHelper.MESS_SETS_FILE, NetDbHelper.MESS_SETS_ORDER,
+                NetDbHelper.MESS_SETS_DURATION };
+        String selection = NetDbHelper.MESS_SETS_MESS_ID + " = ? ";
+        String[] selectionArgs = null;
+        String orderBy = NetDbHelper.MESS_SETS_ORDER + " ASC";
+
+        Cursor curMessage;
+
+        Log.d(TAG, String.format("Recieve intent %d", messSetId));
+        selectionArgs = new String[] { String.format("%d", messSetId) };
+        curMessage = UVoxPlayer.currDb.query(NetDbHelper.TABLE_MESS_SETS,
+                columns, selection, selectionArgs, null, null, orderBy);
+        if (curMessage.moveToFirst()) {
+            Log.d(TAG, String.format("Files number: %d", curMessage.getCount()));
+            do {
+                PlayMessageService.messQueue.add(curMessage
+                        .getString(curMessage
+                                .getColumnIndex(NetDbHelper.MESS_SETS_FILE)));
+                Log.d(TAG, String.format("File %s order %d", curMessage
+                        .getString(curMessage
+                                .getColumnIndex(NetDbHelper.MESS_SETS_FILE)),
+                        curMessage.getInt(curMessage
+                                .getColumnIndex(NetDbHelper.MESS_SETS_ORDER))));
+            } while (curMessage.moveToNext());
+        }
+    }
+
+    public static long dateParseTimeRegExp(String period) {
+
+        Pattern pattern = Pattern.compile("(\\d{2}):(\\d{2}):(\\d{2})");
+        Calendar m = Calendar.getInstance(); // midnight
+        m.set(Calendar.HOUR_OF_DAY, 0);
+        m.set(Calendar.MINUTE, 0);
+        m.set(Calendar.SECOND, 0);
+        m.set(Calendar.MILLISECOND, 0);
+        long now = Calendar.getInstance().getTimeInMillis();
+        long tillMidnight = now - m.getTimeInMillis();
+        long event = 0L;
+        Matcher matcher = pattern.matcher(period);
+        if (matcher.matches()) {
+            event = Long.parseLong(matcher.group(1)) * 3600000L
+                    + Long.parseLong(matcher.group(2)) * 60000
+                    + Long.parseLong(matcher.group(3)) * 1000;
+        } else {
+            throw new IllegalArgumentException("Invalid format " + period);
+        }
+        if (event > tillMidnight) {
+            return m.getTimeInMillis() + event;
+        } else {
+            m.add(Calendar.DAY_OF_MONTH, 1);
+            return m.getTimeInMillis() + event;
+        }
     }
 }

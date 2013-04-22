@@ -8,6 +8,7 @@ import android.view.View;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created with IntelliJ IDEA.
@@ -70,6 +71,11 @@ public class VisualizerView extends View {
         }
 
         // Create the Visualizer object and attach it to our media player.
+        try {
+            TimeUnit.MILLISECONDS.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         try {
             mVisualizer = new Visualizer(sessionId);
             mVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);

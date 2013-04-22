@@ -42,8 +42,9 @@ public class PlayMusicService extends Service {
 	PlayBinder binder = new PlayBinder();
 	protected boolean musicEnded = false;
 	static int prev = 0;
+    private static PlayMusicService pms;
 
-	@Override
+    @Override
 	public void onCreate() {
 		if (isCreated) {
 			return;
@@ -73,7 +74,9 @@ public class PlayMusicService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		
+
+
+		pms = this;
 		if (isStarted) {
 			return START_NOT_STICKY;
 		}
@@ -86,9 +89,9 @@ public class PlayMusicService extends Service {
 						LogPlay.STAT_END);
 				mPlayer.stop();
 				mPlayer.release();
-				Intent mesint = new Intent(MainService.BROADCAST_ACT_SCH);
-				mesint.putExtra(MainService.PARAM_RESULT,
-						MainService.STATUS_PLAY_STOP);
+				Intent mesint = new Intent(UVoxPlayer.BROADCAST_ACT_SCH);
+				mesint.putExtra(UVoxPlayer.PARAM_RESULT,
+                        UVoxPlayer.STATUS_PLAY_STOP);
 				sendBroadcast(mesint);
 			}
 		});
@@ -167,9 +170,9 @@ public class PlayMusicService extends Service {
 			}
 		} else {
 			playlistNotEmpty = false;
-			Intent mesint = new Intent(MainService.BROADCAST_ACT_SCH);
-			mesint.putExtra(MainService.PARAM_RESULT,
-					MainService.STATUS_PLAYLIST_EMPTY);
+			Intent mesint = new Intent(UVoxPlayer.BROADCAST_ACT_SCH);
+			mesint.putExtra(UVoxPlayer.PARAM_RESULT,
+                    UVoxPlayer.STATUS_PLAYLIST_EMPTY);
 			sendBroadcast(mesint);
 			Log.e(TAG, "No such playlist or playlist not schedeled");
 		}
@@ -238,9 +241,9 @@ public class PlayMusicService extends Service {
 						e.printStackTrace();
 					}
 				}
-				Intent mesint = new Intent(MainService.BROADCAST_ACT_SCH);
-				mesint.putExtra(MainService.PARAM_RESULT,
-						MainService.STATUS_FADEOUT);
+				Intent mesint = new Intent(UVoxPlayer.BROADCAST_ACT_SCH);
+				mesint.putExtra(UVoxPlayer.PARAM_RESULT,
+                        UVoxPlayer.STATUS_FADEOUT);
 				sendBroadcast(mesint);
 				Log.d(TAG, "FadeOut intent sended");
 			}
@@ -274,9 +277,9 @@ public class PlayMusicService extends Service {
 						e.printStackTrace();
 					}
 				}
-				Intent mesint = new Intent(MainService.BROADCAST_ACT_SCH);
-				mesint.putExtra(MainService.PARAM_RESULT,
-						MainService.STATUS_FADEIN);
+				Intent mesint = new Intent(UVoxPlayer.BROADCAST_ACT_SCH);
+				mesint.putExtra(UVoxPlayer.PARAM_RESULT,
+                        UVoxPlayer.STATUS_FADEIN);
 				sendBroadcast(mesint);
 				musicEnded = false;
 				Log.d(TAG, "FadeIn intent sended");
@@ -328,7 +331,7 @@ public class PlayMusicService extends Service {
 
 	class PlayBinder extends Binder {
 		PlayMusicService getService() {
-			return PlayMusicService.this;
+			return pms;
 		}
 	}
 

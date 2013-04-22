@@ -1,31 +1,20 @@
 package com.ultivox.uvoxplayer;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.concurrent.TimeUnit;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.os.RecoverySystem;
 import android.util.Log;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 public class UpgradeTask extends AsyncTask<String, String, String> implements
 		BackgroundTask {
@@ -186,20 +175,20 @@ public class UpgradeTask extends AsyncTask<String, String, String> implements
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		Intent mesServ = new Intent(MainService.BROADCAST_ACT_SERVER);
+		Intent mesServ = new Intent(UVoxPlayer.BROADCAST_ACT_SERVER);
 		if (result != null) {
 			if (result.equals("Ok")) {
-				mesServ.putExtra(MainService.PARAM_RESULT,
-						MainService.SERVER_RELOAD);
+				mesServ.putExtra(UVoxPlayer.PARAM_RESULT,
+                        UVoxPlayer.SERVER_RELOAD);
 				publishProgress("File uploaded!");
 			}
 			if (result.equals("Actual")) {
-				mesServ.putExtra(MainService.PARAM_RESULT,
-						MainService.SERVER_CONTINUE);
+				mesServ.putExtra(UVoxPlayer.PARAM_RESULT,
+                        UVoxPlayer.SERVER_CONTINUE);
 				publishProgress("No need to updrade ");
 			}
 		} else {
-			mesServ.putExtra(MainService.PARAM_RESULT, MainService.SERVER_ERROR);
+			mesServ.putExtra(UVoxPlayer.PARAM_RESULT, UVoxPlayer.SERVER_ERROR);
 			publishProgress("Connecting problem. Please try again later.");
 		}
 		try {

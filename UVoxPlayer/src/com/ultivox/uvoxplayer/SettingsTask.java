@@ -1,21 +1,5 @@
 package com.ultivox.uvoxplayer;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Map;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
-import org.xmlpull.v1.XmlSerializer;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,6 +9,16 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Xml;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+import org.xmlpull.v1.XmlSerializer;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Map;
 
 public class SettingsTask extends AsyncTask<String, String, String> implements BackgroundTask {
 
@@ -156,7 +150,7 @@ public class SettingsTask extends AsyncTask<String, String, String> implements B
 			outputStream.flush();
 			outputStream.close();
 
-			// и получаем ответ от сервера
+			// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					connection.getInputStream()));
@@ -191,9 +185,9 @@ public class SettingsTask extends AsyncTask<String, String, String> implements B
 		super.onPostExecute(result);
 		Log.d(LOG_TAG, "End. Result = " + result);
 		publishProgress("");
-		Intent mesServ = new Intent(MainService.BROADCAST_ACT_SERVER);
+		Intent mesServ = new Intent(UVoxPlayer.BROADCAST_ACT_SERVER);
 		if (result == null) {
-			mesServ.putExtra(MainService.PARAM_RESULT, MainService.SERVER_ERROR);
+			mesServ.putExtra(UVoxPlayer.PARAM_RESULT, UVoxPlayer.SERVER_ERROR);
 			publishProgress("Connecting problem. Please try again later.");
 			return;
 		}
@@ -254,7 +248,7 @@ public class SettingsTask extends AsyncTask<String, String, String> implements B
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		mesServ.putExtra(MainService.PARAM_RESULT, MainService.SERVER_CONTINUE);
+		mesServ.putExtra(UVoxPlayer.PARAM_RESULT, UVoxPlayer.SERVER_CONTINUE);
 		tContext.sendBroadcast(mesServ);
 
 	}

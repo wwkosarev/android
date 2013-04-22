@@ -1,17 +1,5 @@
 package com.ultivox.uvoxplayer;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import org.xmlpull.v1.XmlSerializer;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -20,6 +8,15 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Xml;
+import org.xmlpull.v1.XmlSerializer;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class LogPlayTask extends AsyncTask<String, String, String> implements
 		BackgroundTask {
@@ -209,13 +206,13 @@ public class LogPlayTask extends AsyncTask<String, String, String> implements
 	protected void onPostExecute(String result) {
 
 		super.onPostExecute(result);
-		Intent mesServ = new Intent(MainService.BROADCAST_ACT_SERVER);
+		Intent mesServ = new Intent(UVoxPlayer.BROADCAST_ACT_SERVER);
 		if (result != null) {
-			mesServ.putExtra(MainService.PARAM_RESULT,
-					MainService.SERVER_CONTINUE);
+			mesServ.putExtra(UVoxPlayer.PARAM_RESULT,
+                    UVoxPlayer.SERVER_CONTINUE);
 			publishProgress("");
 		} else {
-			mesServ.putExtra(MainService.PARAM_RESULT, MainService.SERVER_ERROR);
+			mesServ.putExtra(UVoxPlayer.PARAM_RESULT, UVoxPlayer.SERVER_ERROR);
 			publishProgress("Connecting problem. Please try again later.");
 		}
 		tContext.sendBroadcast(mesServ);

@@ -1,10 +1,5 @@
 package com.ultivox.uvoxplayer;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Queue;
-
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,6 +10,11 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class PlayMessageService extends Service {
 
@@ -34,7 +34,7 @@ public class PlayMessageService extends Service {
 		mPlayer.reset();
 
 		brPlay = new BroadcastReceiver() {
-			// действия при получении сообщений
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
@@ -45,7 +45,7 @@ public class PlayMessageService extends Service {
 			}
 		};
 		IntentFilter volFilt = new IntentFilter(UVoxPlayer.BROADCAST_MESSINFO);
-		// регистрируем (включаем) BroadcastReceiver
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ) BroadcastReceiver
 		registerReceiver(brPlay, volFilt);
 		Log.d(TAG, "Create service");
 	}
@@ -64,9 +64,9 @@ public class PlayMessageService extends Service {
 				} else {
 					Log.d(TAG, "All set files played.");
 					mPlayer.release();
-					Intent mesint = new Intent(MainService.BROADCAST_ACT_SCH);
-					mesint.putExtra(MainService.PARAM_RESULT,
-							MainService.STATUS_MESSAGE_STOP);
+					Intent mesint = new Intent(UVoxPlayer.BROADCAST_ACT_SCH);
+					mesint.putExtra(UVoxPlayer.PARAM_RESULT,
+                            UVoxPlayer.STATUS_MESSAGE_STOP);
 					sendBroadcast(mesint);
 					stopSelf();
 				}
@@ -77,9 +77,9 @@ public class PlayMessageService extends Service {
 			Log.d(TAG, "Play first file.");
 		} else {
 			Log.d(TAG, "No files to play.");
-			Intent mesint = new Intent(MainService.BROADCAST_ACT_SCH);
-			mesint.putExtra(MainService.PARAM_RESULT,
-					MainService.STATUS_MESSAGE_STOP);
+			Intent mesint = new Intent(UVoxPlayer.BROADCAST_ACT_SCH);
+			mesint.putExtra(UVoxPlayer.PARAM_RESULT,
+                    UVoxPlayer.STATUS_MESSAGE_STOP);
 			sendBroadcast(mesint);
 			stopSelf();
 		}
