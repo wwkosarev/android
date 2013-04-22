@@ -23,7 +23,6 @@ import android.widget.Toast;
 import com.ultivox.uvoxplayer.visualizer.VisualizerView;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Calendar;
 
 public class UVoxPlayer extends Activity {
@@ -31,7 +30,7 @@ public class UVoxPlayer extends Activity {
     public static final String PARAM_PLAYER = "vizual";
     public static Activity activity;
 
-	public final static String INIT_UMS_NB = "UMS000003";
+	public final static String INIT_UMS_NB = "UMS000001";
 	public final static String INIT_HOME_URL = "http://www.thinkinghouse.ru/netplayer/";
 	public final static String INIT_CONFIG_URL = "http://www.thinkinghouse.ru/interface/";
 	public final static String INIT_TEST_CONN_URL = "test000001/setup.txt";
@@ -126,6 +125,7 @@ public class UVoxPlayer extends Activity {
 	private DownloadTask dlTask = null;
 	private UpgradeTask ugTask = null;
     private EnviromentSetupTask enviromentTask = null;
+    private RemoveLauncherTask launcherTask = null;
 
     private BroadcastReceiver br;
     private BroadcastReceiver brFinish;
@@ -138,6 +138,7 @@ public class UVoxPlayer extends Activity {
     private VisualizerView mVisualizerView;
     private static int playSessionId = 0;
     private static boolean launcherMainOff = true;
+
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -295,15 +296,15 @@ public class UVoxPlayer extends Activity {
                     if ((result==0)&&(playSessionId!=0)) {
                         // song start to play
                         playSessionId = result;
-                        mVisualizerView.clearRenderers();
-                        mVisualizerView.setEnabled(false);
-
+                        mVisualizerView.setVisibility (View.INVISIBLE);
+                        mVisualizerView.setOff();
+                        mVisualizerView.release();
                     }
                     if ((result!=0)&&(playSessionId==0)) {
                         // song stop to play
                         playSessionId = result;
-                        mVisualizerView.setEnabled(true);
                         mVisualizerView.link(playSessionId);
+                        mVisualizerView.setVisibility (View.VISIBLE);
                     } else {
                         playSessionId = result;
                     }
@@ -354,18 +355,9 @@ public class UVoxPlayer extends Activity {
             }
         }
         if ((appInstalledOrNot(launcherUri))&&launcherMainOff) {
-            String[] commandMove = new String[]{"su", "-c",
-                    "busybox mv /system/app/" + reMoveFile + " /mnt/sdcard/Download/" };
-            Log.d(LOG_TAG, commandMove[0] + " " + commandMove[1] + " " + commandMove[2]);
-            Process reMoveProc;
-            try {
-                reMoveProc = Runtime.getRuntime().exec(commandMove);
-                int res = reMoveProc.waitFor();
-                Log.d(LOG_TAG, "Result of removing Launcher: " + res);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (launcherTask == null) {
+                launcherTask = new RemoveLauncherTask(this);
+                launcherTask.runTask("remove");
             }
         }
 
@@ -580,20 +572,10 @@ public class UVoxPlayer extends Activity {
         SharedPreferences.Editor editor = launchers.edit();
         editor.putBoolean("LAUNCHER_MAIN_OFF", launcherMainOff);
         editor.commit();
-        if ((appInstalledOrNot(launcherUri))&&launcherMainOff) {
-            String[] commandMove = new String[]{"su", "-c",
-                    "busybox mv /system/app/" + reMoveFile + " /mnt/sdcard/Download/" };
-            Log.d(LOG_TAG, commandMove[0] + " " + commandMove[1] + " " + commandMove[2]);
-            Process reMoveProc;
-            try {
-                reMoveProc = Runtime.getRuntime().exec(commandMove);
-                int res = reMoveProc.waitFor();
-                Log.d(LOG_TAG, "Result of removing Launcher: " + res);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        if (appInstalledOrNot(launcherUri)) {
+            Log.d(LOG_TAG, "Now main launcher will removed");
+            launcherTask = new RemoveLauncherTask(this);
+            launcherTask.runTask("remove");
         }
     }
 
@@ -608,27 +590,16 @@ public class UVoxPlayer extends Activity {
 
 	public void onRestore(MenuItem item) {
 
+		LogPlay.write("button", "Restore launcher", "press");
+        if (!appInstalledOrNot(launcherUri)) {
+            Log.d(LOG_TAG, "Now main launcher will restored");
+            launcherTask = new RemoveLauncherTask(this);
+            launcherTask.runTask("install");
+        }
         launcherMainOff = false;
         SharedPreferences.Editor editor = launchers.edit();
         editor.putBoolean("LAUNCHER_MAIN_OFF", launcherMainOff);
         editor.commit();
-		LogPlay.write("button", "Restore launcher", "press");
-		String[] command = new String[] {"su", "-c",
-                "busybox install /mnt/sdcard/Download/" + reMoveFile + " /system/app/"};
-		Log.d(LOG_TAG,command[0]+" "+command[1]+" "+command[2]);
-		Process reInsProc;
-		try {
-			reInsProc = Runtime.getRuntime().exec(command);
-			int res = reInsProc.waitFor();
-			Log.d(LOG_TAG,"Result of reinstall : "+res);
-			if (res==0) {
-				
-			}
-		}catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 
 

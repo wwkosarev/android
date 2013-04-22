@@ -84,9 +84,6 @@ public class PlayMusicService extends Service {
 				Log.d(TAG, "Song ended.");
 				LogPlay.write(UVoxPlayer.LOG_COMMAND_MUSIC, currFileToPlay,
 						LogPlay.STAT_END);
-                Intent mesConnVisual = new Intent(UVoxPlayer.BROADCAST_VOLUME);
-                mesConnVisual.putExtra(UVoxPlayer.PARAM_PLAYER, 0);
-                sendBroadcast(mesConnVisual);
 				mPlayer.stop();
 				mPlayer.release();
 				Intent mesint = new Intent(MainService.BROADCAST_ACT_SCH);

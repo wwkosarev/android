@@ -76,7 +76,6 @@ public class MainService extends Service {
 		intentPlay = new Intent(this, PlayMusicService.class);
 		intentSchedule = new Intent(this, SchedulerService.class);
 		intentMessage = new Intent(this, PlayMessageService.class);
-		// ������� ����������� � �������� PlayMusicService
 		sConn = new ServiceConnection() {
 
 			public void onServiceConnected(ComponentName name, IBinder binder) {
@@ -91,7 +90,6 @@ public class MainService extends Service {
 				boundPlay = false;
 			}
 		};
-		// ������� BroadcastReceiver
 		brMain = new BroadcastReceiver() {
 			// �������� ��� ��������� ���������
 
@@ -191,9 +189,7 @@ public class MainService extends Service {
 			}
 
 		};
-		// ������� ������ ��� BroadcastReceiver
 		IntentFilter intFilt = new IntentFilter(BROADCAST_ACT_SCH);
-		// ������������ (��������) BroadcastReceiver
 		registerReceiver(brMain, intFilt);
 
 		brServer = new BroadcastReceiver() {
