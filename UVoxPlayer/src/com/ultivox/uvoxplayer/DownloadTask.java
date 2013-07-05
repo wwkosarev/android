@@ -111,7 +111,7 @@ public class DownloadTask extends AsyncTask<String, String, String> implements
 		rqstStringCom = UVoxPlayer.CONFIG_URL + UVoxPlayer.COMCONNECT
 				+ UVoxPlayer.UMS_NB;
 		downloadURL = UVoxPlayer.HOME_URL;
-		downloadTo = Environment.getExternalStorageDirectory().toString()
+		downloadTo = UVoxEnvironment.getExternalStorageDirectory().toString()
 				+ UVoxPlayer.STORAGE + File.separator;
 		playDir = UVoxPlayer.PLAYLISTS;
 		messDir = UVoxPlayer.MESSAGES;

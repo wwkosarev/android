@@ -36,9 +36,9 @@ public class UVoxPlayer extends Activity {
     public static final String PARAM_PLAYER = "vizual";
     public static Activity activity;
 
-	public final static String INIT_UMS_NB = "UMS000001";
-	public final static String INIT_HOME_URL = "http://www.thinkinghouse.ru/netplayer/";
-	public final static String INIT_CONFIG_URL = "http://www.thinkinghouse.ru/interface/";
+	public final static String INIT_UMS_NB = "UMS000007";
+	public final static String INIT_HOME_URL = "http://www.ultivox.ru/netplayer/netplayer/";
+	public final static String INIT_CONFIG_URL = "http://www.ultivox.ru/netplayer/interface/";
 	public final static String INIT_TEST_CONN_URL = "test000001/setup.txt";
 	public final static String INIT_APK_FILE = "UVoxPlayer.apk";
 	public final static String INIT_STORAGE = "/Music/netplayer";
@@ -51,9 +51,9 @@ public class UVoxPlayer extends Activity {
 	public final static String INIT_TIME_CONNECTION = "";
 	public final static long INIT_INTERVAL_CONNECTION = 0;
 	public final static long INTERVAL_CONNECTION_STAT = 60*60*1000; // 60*60*1000
-	public static final String INIT_LOGCAT_SERVER = "http://www.thinkinghouse.ru/interface/php/logcat_reciever.php";
-	public static final String INIT_LOGPLAY_SERVER = "http://www.thinkinghouse.ru/interface/php/logplay_reciever.php";
-	public static final String INIT_SETTINGS_SERVER = "http://www.thinkinghouse.ru/interface/php/settings_reciever.php";
+	public static final String INIT_LOGCAT_SERVER = "http://www.ultivox.ru/netplayer/interface/php/logcat_reciever.php";
+	public static final String INIT_LOGPLAY_SERVER = "http://www.ultivox.ru/netplayer/interface/php/logplay_reciever.php";
+	public static final String INIT_SETTINGS_SERVER = "http://www.ultivox.ru/netplayer/interface/php/settings_reciever.php";
 	public final static String INIT_LOGCAT_ON = "off";
 	public final static String INIT_LOGPLAY_ON = "off";
 	public final static String INIT_UPGRADE_ON = "off";
@@ -355,7 +355,7 @@ public class UVoxPlayer extends Activity {
                             tLogCat = new TimeLogInfo(context);
                             taskQueue.offer(new LogCatTask(context));
                         } else {
-                            String logDirPath = Environment.getExternalStorageDirectory()
+                            String logDirPath = UVoxEnvironment.getExternalStorageDirectory()
                                     .toString() + UVoxPlayer.LOGCAT_DIR;
                             File logDir = new File(logDirPath);
                             if (logDir.exists()) {
@@ -381,8 +381,9 @@ public class UVoxPlayer extends Activity {
                         isConnectionSession = true;
                         LogPlay.write("system", "Server connection", "start");
                         SysInfo sys = new SysInfo();
-                        LogPlay.write("system", sys.getMemFree(), "info");
+                        LogPlay.write("system", sys.getMainMemFree(), "info");
                         LogPlay.write("system", sys.getIntMemFree(), "info");
+                        LogPlay.write("system", sys.getExtMemFree(), "info");
                         Intent mesServ = new Intent(BROADCAST_ACT_SERVER);
                         mesServ.putExtra(PARAM_RESULT, SERVER_CONTINUE);
                         sendBroadcast(mesServ);
@@ -1079,7 +1080,7 @@ public class UVoxPlayer extends Activity {
     }
 	private void createAppDirs() {
 
-		String base = Environment.getExternalStorageDirectory().toString()
+		String base = UVoxEnvironment.getExternalStorageDirectory().toString()
 				+ INIT_STORAGE;
 		Log.d(LOG_TAG, "Restore filesystem"+base);
 		File dir = new File(base);

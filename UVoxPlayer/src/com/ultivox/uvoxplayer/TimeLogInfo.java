@@ -15,7 +15,7 @@ public class TimeLogInfo {
 	// конструктор класса - формирует текущий PIDHashMap а также определяет path текущего logcat файла и перенаправляет вывод логов в новый файл.
 	public TimeLogInfo(Context con) {
 		this.pidMap = new PIDHashMap(con);
-		String logDirPath = Environment.getExternalStorageDirectory()
+		String logDirPath = UVoxEnvironment.getExternalStorageDirectory()
 				.toString() + UVoxPlayer.LOGCAT_DIR;
 		File logDir = new File(logDirPath);
 		if (!logDir.exists()) {
@@ -26,7 +26,7 @@ public class TimeLogInfo {
 				"logyyyyMMddhhmmss.txt", new java.util.Date()).toString();
 		String comandStop = "logcat -c";
 		String comandStart = "logcat -v long  -f "
-				+ Environment.getExternalStorageDirectory().toString()
+				+ UVoxEnvironment.getExternalStorageDirectory().toString()
 				+ UVoxPlayer.LOGCAT_DIR + File.separator + logName;
 		try {
 			Runtime.getRuntime().exec(comandStop);  // очищаем буфер вывода

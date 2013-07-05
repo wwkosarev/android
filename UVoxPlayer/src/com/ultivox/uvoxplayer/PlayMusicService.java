@@ -96,7 +96,7 @@ public class PlayMusicService extends Service {
 			}
 		});
 		currentPlayList = getCurrentPlayList();
-		String pathS = Environment.getExternalStorageDirectory().toString()
+		String pathS = UVoxEnvironment.getExternalStorageDirectory().toString()
 				+ UVoxPlayer.STORAGE + UVoxPlayer.PLAYLISTS + File.separator
 				+ currentPlayList;
         File f = new File(pathS);
@@ -113,7 +113,7 @@ public class PlayMusicService extends Service {
 				Log.d(TAG, String.format("random nb: - %d", nb));
 			} while (prev == nb); // not previous song
 			prev = nb;
-			currFileToPlay = Environment.getExternalStorageDirectory()
+			currFileToPlay = UVoxEnvironment.getExternalStorageDirectory()
 					.toString()
 					+ UVoxPlayer.STORAGE
 					+ UVoxPlayer.PLAYLISTS

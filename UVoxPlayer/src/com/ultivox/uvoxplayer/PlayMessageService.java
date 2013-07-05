@@ -103,7 +103,7 @@ public class PlayMessageService extends Service {
 	private boolean playNextMessage() {
 
 		if (messQueue.size()>0) {
-			pathS = Environment.getExternalStorageDirectory().toString()
+			pathS = UVoxEnvironment.getExternalStorageDirectory().toString()
 					+ UVoxPlayer.STORAGE + UVoxPlayer.MESSAGES + File.separator + messQueue.poll();
 			Log.d(TAG, "Now play message file: " + pathS);
 			try {
