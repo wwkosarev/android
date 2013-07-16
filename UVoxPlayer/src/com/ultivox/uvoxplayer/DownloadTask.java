@@ -295,10 +295,14 @@ public class DownloadTask extends AsyncTask<String, String, String> implements
 											File cDir = new File(downloadTo
 													+ group + File.separator
 													+ xpp.getText());
+                                            Log.d(LOG_TAG, downloadTo
+                                                    + group + File.separator
+                                                    + xpp.getText());
 											if (!cDir.exists()
 													&& !cDir.isDirectory()) {
 												cDir.mkdirs();
-											}
+                                                Log.d(LOG_TAG, "mkdirs");
+                                            }
 										}
 									}
 									if (action.equals("download")) {

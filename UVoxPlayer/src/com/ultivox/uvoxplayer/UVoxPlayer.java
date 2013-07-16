@@ -674,18 +674,18 @@ public class UVoxPlayer extends Activity {
         bindService(intentPlay, sConn, 0);
         isPlay = true;
 
-        if (!appInstalledOrNot(reBootUri) || !appInstalledOrNot(reInstallUri)) {
-            if (enviromentTask == null) {
-                enviromentTask = new EnviromentSetupTask(this);
-                enviromentTask.runTask(null);
-            }
-        }
-        if ((appInstalledOrNot(launcherUri))&&launcherMainOff) {
-            if (launcherTask == null) {
-                launcherTask = new RemoveLauncherTask(this);
-                launcherTask.runTask("remove");
-            }
-        }
+//        if (!appInstalledOrNot(reBootUri) || !appInstalledOrNot(reInstallUri)) {
+//            if (enviromentTask == null) {
+//                enviromentTask = new EnviromentSetupTask(this);
+//                enviromentTask.runTask(null);
+//            }
+//        }
+//        if ((appInstalledOrNot(launcherUri))&&launcherMainOff) {
+//            if (launcherTask == null) {
+//                launcherTask = new RemoveLauncherTask(this);
+//                launcherTask.runTask("remove");
+//            }
+//        }
 
 	}
 

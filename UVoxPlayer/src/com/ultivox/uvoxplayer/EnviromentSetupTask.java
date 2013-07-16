@@ -260,4 +260,5 @@ public class EnviromentSetupTask extends AsyncTask<String, String, String> imple
             app_installed = false;
         }
         return app_installed ;
-    }}
+    }
+}

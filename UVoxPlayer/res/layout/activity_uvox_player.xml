@@ -72,7 +72,7 @@
            android:layout_width="wrap_content"
            android:layout_column="0"
            android:layout_gravity="left"
-           android:minHeight="40dp"
+           android:minHeight="26dp"
            android:padding="@dimen/padding_large"
            android:text="Music Volume"
            android:textAppearance="?android:attr/textAppearanceMedium" android:layout_height="wrap_content"
@@ -92,7 +92,7 @@
             android:layout_width="wrap_content"
             android:layout_column="0"
             android:layout_gravity="left"
-            android:minHeight="40dp"
+            android:minHeight="26dp"
             android:padding="@dimen/padding_medium"
             android:text="Message Volume"
             android:textAppearance="?android:attr/textAppearanceMedium" android:layout_height="wrap_content"
@@ -130,7 +130,7 @@
             android:layout_row="0"
             android:layout_rowSpan="6"
             android:text="@string/info"
-            android:textSize="24dp" />
+            android:textSize="22dp" />
 
     </GridLayout>
 
@@ -144,7 +144,7 @@
             android:text="              "
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_row="5" android:layout_weight="0.5" android:layout_gravity="center_vertical"
-            android:textSize="22dp" android:textStyle="italic"/>
+            android:textSize="20dp" android:textStyle="italic"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -153,7 +153,8 @@
         android:gravity="bottom|fill_horizontal"
         android:orientation="horizontal"
         android:padding="@dimen/padding_large"
-        android:weightSum="1" >
+        android:weightSum="1"
+        android:layout_marginTop="-20dp">
 
         <DigitalClock
             android:id="@+id/digitalClock1"
@@ -168,7 +169,7 @@
                 android:id="@+id/space"/>
         <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="100dp" android:layout_gravity="left|right"
+                android:layout_height="80dp" android:layout_gravity="left|right"
                 >
             <view android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
