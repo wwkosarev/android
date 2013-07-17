@@ -115,7 +115,8 @@ public class PlayMessageService extends Service {
 						UVoxPlayer.volumeMessage);
 				mPlayer.start();
 				LogPlay.write(UVoxPlayer.LOG_COMMAND_MESS, pathS, LogPlay.STAT_BEGIN);
-			} catch (IllegalArgumentException e) {
+                return true;
+            } catch (IllegalArgumentException e) {
 				LogPlay.write(UVoxPlayer.LOG_COMMAND_MESS, pathS, LogPlay.STAT_ERROR);
 				e.printStackTrace();
 			} catch (SecurityException e) {
@@ -128,7 +129,7 @@ public class PlayMessageService extends Service {
 				LogPlay.write(UVoxPlayer.LOG_COMMAND_MESS, pathS, LogPlay.STAT_ERROR);
 				e.printStackTrace();
 			}
-			return true;
+			return false;
 		} else {
 			return false;
 		}
