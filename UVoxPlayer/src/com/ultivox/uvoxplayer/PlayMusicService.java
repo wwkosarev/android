@@ -105,6 +105,7 @@ public class PlayMusicService extends Service {
 			int nb = filesPlayList.length;
 			if (nb < 4) {
                 Log.d(TAG, "Less then 3 tracks to play, exit!");
+                setAlarmToNextHour();
 				return START_NOT_STICKY;
 			}
 			Random generator = new Random();
@@ -169,12 +170,8 @@ public class PlayMusicService extends Service {
 				e.printStackTrace();
 			}
 		} else {
-			playlistNotEmpty = false;
-			Intent mesint = new Intent(UVoxPlayer.BROADCAST_ACT_SCH);
-			mesint.putExtra(UVoxPlayer.PARAM_RESULT,
-                    UVoxPlayer.STATUS_PLAYLIST_EMPTY);
-			sendBroadcast(mesint);
-			Log.e(TAG, "No such playlist or playlist not schedeled");
+            Log.e(TAG, "No such playlist or playlist not schedeled");
+            setAlarmToNextHour();
 		}
 		return START_NOT_STICKY;
 	}
@@ -339,5 +336,13 @@ public class PlayMusicService extends Service {
 		LogPlay.write(UVoxPlayer.LOG_COMMAND_MUSIC, currFileToPlay,
 				LogPlay.STAT_ERROR);
 	}
+
+    void setAlarmToNextHour () {
+        playlistNotEmpty = false;
+        Intent mesint = new Intent(UVoxPlayer.BROADCAST_ACT_SCH);
+        mesint.putExtra(UVoxPlayer.PARAM_RESULT,
+                UVoxPlayer.STATUS_PLAYLIST_EMPTY);
+        sendBroadcast(mesint);
+    }
 
 }

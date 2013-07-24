@@ -80,7 +80,7 @@ public class SchedulerService extends Service {
 			timeNow = Calendar.getInstance();
 			timeVar = Calendar.getInstance();
 			timeDayBegin = Calendar.getInstance();
-			timeScheduler = Calendar.getInstance();
+			timeScheduler = Calendar.getInstance();  // Moment of start next hour
 
 		}
 

@@ -921,6 +921,13 @@ public class UVoxPlayer extends Activity {
 
         LogPlay.write("button", "Show values", "press");
         String toastLine = "Serial number: "+ UMS_NB;
+        try {
+            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            toastLine = toastLine + String.format("\n Version code: %d", pInfo.versionCode);
+
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Check version error! " + e.getMessage());
+        }
         Toast.makeText(getApplicationContext(),
                 toastLine, Toast.LENGTH_LONG).show();
 

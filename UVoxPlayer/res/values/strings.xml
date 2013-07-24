@@ -11,7 +11,7 @@
     <string name="menu_remove">Remove Launcher</string>
     <string name="menu_restore">Restore Launcher</string>
     <string name="menu_showval">Show values</string>
-    <string name="title_activity_uvox_player">UVoxPlayer</string>
+    <string name="title_activity_uvox_player">UltiVoxPlayer</string>
     <string name="start">Play</string>
     <string name="stop">Stop</string>
     <string name="net_set">Network settings</string>
