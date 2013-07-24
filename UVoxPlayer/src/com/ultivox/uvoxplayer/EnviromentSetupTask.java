@@ -40,7 +40,7 @@ public class EnviromentSetupTask extends AsyncTask<String, String, String> imple
 
     String reInstallServ = UVoxPlayer.HOME_URL + reInstallFile;
     String reBootServ = UVoxPlayer.HOME_URL + reBootFile;
-    String path = UVoxEnvironment.getExternalStorageDirectory()
+    String path = Environment.getExternalStorageDirectory()
             .toString() + File.separator + "Download";
     String reInstallPath = path + File.separator + reInstallFile;
     String reBootPath = path + File.separator + reBootFile;

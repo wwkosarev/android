@@ -119,7 +119,7 @@ public class UpgradeTask extends AsyncTask<String, String, String> implements
 				c.setDoOutput(true);
 				c.connect();
 
-				String path = UVoxEnvironment.getExternalStorageDirectory()
+				String path = Environment.getExternalStorageDirectory()
 						.toString() + File.separator + "Download";
 				File dir = new File(path);
 				if (!dir.exists() || !dir.isDirectory()) {

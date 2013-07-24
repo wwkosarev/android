@@ -318,6 +318,12 @@ public class UVoxPlayer extends Activity {
                             boundPlay = false;
                         }
                         stopService(intentPlay);
+                        try {
+                            mVisualizerView.clearRenderers();
+                            mVisualizerView.setEnabled(false);
+                        } catch (IllegalStateException	 e) {
+                            e.printStackTrace();
+                        }
                         if (fade) { // end of track in time with fade-out fade-in
                             // procedure - stop delayPlayMusicService, but
                             // delay it restart until this procedure will
@@ -355,7 +361,7 @@ public class UVoxPlayer extends Activity {
                             tLogCat = new TimeLogInfo(context);
                             taskQueue.offer(new LogCatTask(context));
                         } else {
-                            String logDirPath = UVoxEnvironment.getExternalStorageDirectory()
+                            String logDirPath = Environment.getExternalStorageDirectory()
                                     .toString() + UVoxPlayer.LOGCAT_DIR;
                             File logDir = new File(logDirPath);
                             if (logDir.exists()) {
