@@ -12,7 +12,7 @@ public class TimeLogInfo {
 	private PIDHashMap pidMap;
 	private String logFile;
 
-	// конструктор класса - формирует текущий PIDHashMap а также определяет path текущего logcat файла и перенаправляет вывод логов в новый файл.
+	// РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєР»Р°СЃСЃР° - С„РѕСЂРјРёСЂСѓРµС‚ С‚РµРєСѓС‰РёР№ PIDHashMap Р° С‚Р°РєР¶Рµ РѕРїСЂРµРґРµР»СЏРµС‚ path С‚РµРєСѓС‰РµРіРѕ logcat С„Р°Р№Р»Р° Рё РїРµСЂРµРЅР°РїСЂР°РІР»СЏРµС‚ РІС‹РІРѕРґ Р»РѕРіРѕРІ РІ РЅРѕРІС‹Р№ С„Р°Р№Р».
 	public TimeLogInfo(Context con) {
 		this.pidMap = new PIDHashMap(con);
 		String logDirPath = Environment.getExternalStorageDirectory()
@@ -29,13 +29,13 @@ public class TimeLogInfo {
 				+ Environment.getExternalStorageDirectory().toString()
 				+ UVoxPlayer.LOGCAT_DIR + File.separator + logName;
 		try {
-			Runtime.getRuntime().exec(comandStop);  // очищаем буфер вывода
-			Runtime.getRuntime().exec(comandStart); // направляем вывод логов в новый файл
+			Runtime.getRuntime().exec(comandStop);  // РѕС‡РёС‰Р°РµРј Р±СѓС„РµСЂ РІС‹РІРѕРґР°
+			Runtime.getRuntime().exec(comandStart); // РЅР°РїСЂР°РІР»СЏРµРј РІС‹РІРѕРґ Р»РѕРіРѕРІ РІ РЅРѕРІС‹Р№ С„Р°Р№Р»
 		} catch (IOException e) {
 			e.printStackTrace();
 			logFile = null;
 		}
-		if (logFiles.length > 0) {     // удаляем все файлы кроме последнего
+		if (logFiles.length > 0) {     // СѓРґР°Р»СЏРµРј РІСЃРµ С„Р°Р№Р»С‹ РєСЂРѕРјРµ РїРѕСЃР»РµРґРЅРµРіРѕ
 			Arrays.sort(logFiles);
 			logFile = logDirPath + File.separator + logFiles[0];
 			for (int k = 1; k < logFiles.length; k++) {

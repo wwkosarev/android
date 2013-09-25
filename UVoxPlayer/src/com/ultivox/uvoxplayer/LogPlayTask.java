@@ -169,7 +169,7 @@ public class LogPlayTask extends AsyncTask<String, String, String> implements
 			outputStream.flush();
 			outputStream.close();
 
-			// и получаем ответ от сервера
+			// Рё РїРѕР»СѓС‡Р°РµРј РѕС‚РІРµС‚ РѕС‚ СЃРµСЂРІРµСЂР°
 
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					connection.getInputStream()));

@@ -9,7 +9,7 @@ public final class LogEntry {
 	private static final DateFormat DATE_FORMATTER = 
         DateFormat.getDateTimeInstance();
     
-    public final long date;   //в миллисекундах
+    public final long date;   //РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С…
     public final long pId;
     public final long tId;
     public final Character logLevel;

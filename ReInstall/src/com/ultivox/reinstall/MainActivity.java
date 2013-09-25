@@ -36,7 +36,7 @@ public class MainActivity extends Activity {
 		@Override
 		protected Integer doInBackground(Void... params) {
 			String[] command = new String[] { "su", "-c",
-					"busybox install /mnt/sdcard/Download/UVoxPlayer.apk /system/app/" };
+					"cp /mnt/sdcard/Download/UVoxPlayer.apk /system/app/" };
 			Log.d("ReInstall", command[0] + " " + command[1] + " " + command[2]);
 			Process reInsProc;
 			try {

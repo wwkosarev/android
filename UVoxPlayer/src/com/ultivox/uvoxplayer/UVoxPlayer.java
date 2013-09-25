@@ -36,7 +36,7 @@ public class UVoxPlayer extends Activity {
     public static final String PARAM_PLAYER = "vizual";
     public static Activity activity;
 
-	public final static String INIT_UMS_NB = "UMS000007";
+	public final static String INIT_UMS_NB = "UMS000011";
 	public final static String INIT_HOME_URL = "http://www.ultivox.ru/netplayer/netplayer/";
 	public final static String INIT_CONFIG_URL = "http://www.ultivox.ru/netplayer/interface/";
 	public final static String INIT_TEST_CONN_URL = "test000001/setup.txt";

@@ -17,15 +17,15 @@ public class LogCatReader  {
 	static final DateFormat LOG_DATE_FORMAT = new SimpleDateFormat("MM-dd HH:mm:ss.SSS");
     
     static final Pattern LOG_ENTRY_PATTERN = Pattern.compile(
-            "(?:^--.*$(?:\\n|\\r\\n))?" 							// берем строку
-            + "^\\[ " 												// начальные квадратные скобки
-            + "(\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d\\.\\d\\d\\d)"	// дата
-            + " +"													// все пробелы
+            "(?:^--.*$(?:\\n|\\r\\n))?" 							// Р±РµСЂРµРј СЃС‚СЂРѕРєСѓ
+            + "^\\[ " 												// РЅР°С‡Р°Р»СЊРЅС‹Рµ РєРІР°РґСЂР°С‚РЅС‹Рµ СЃРєРѕР±РєРё
+            + "(\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d\\.\\d\\d\\d)"	// РґР°С‚Р°
+            + " +"													// РІСЃРµ РїСЂРѕР±РµР»С‹
             + "(\\d+):" 											// PID
             + "0x([\\da-fA-F]+) "									// TID 
-            + "([UDVIWEFS])/" 										// уровень
-            + "(.*) ]$(?:\\n|\\r\\n)" 								// конечные квадратные скобки
-            + "(^(?:.|(?:\\n|\\r\\n))*?)(?:^$(?:\\n|\\r\\n))+" 		// само сообщение
+            + "([UDVIWEFS])/" 										// СѓСЂРѕРІРµРЅСЊ
+            + "(.*) ]$(?:\\n|\\r\\n)" 								// РєРѕРЅРµС‡РЅС‹Рµ РєРІР°РґСЂР°С‚РЅС‹Рµ СЃРєРѕР±РєРё
+            + "(^(?:.|(?:\\n|\\r\\n))*?)(?:^$(?:\\n|\\r\\n))+" 		// СЃР°РјРѕ СЃРѕРѕР±С‰РµРЅРёРµ
             , 
             Pattern.MULTILINE);
     
@@ -48,7 +48,7 @@ public class LogCatReader  {
     
     public LogEntry nextEntry()  {
         
-        // Сканируем до следующей записи
+        // РЎРєР°РЅРёСЂСѓРµРј РґРѕ СЃР»РµРґСѓСЋС‰РµР№ Р·Р°РїРёСЃРё
     	try {
         if(logScanner.findWithinHorizon(LOG_ENTRY_PATTERN, 0) == null)
             return null;
@@ -58,7 +58,7 @@ public class LogCatReader  {
         MatchResult match = logScanner.match();
         Calendar date = Calendar.getInstance();
         Calendar rightNow = Calendar.getInstance();
-        // Парсим запись
+        // РџР°СЂСЃРёРј Р·Р°РїРёСЃСЊ
         try 
         	{ date.setTime(LOG_DATE_FORMAT.parse(match.group(GROUP_DATE))); }
         catch (ParseException e) 
@@ -76,7 +76,7 @@ public class LogCatReader  {
         PIDHashMap currPHM = new PIDHashMap(motherContext);
         String app = currPHM.getAppName(pid);
         
-        // Обрезаем все лишние концы строк до конца записи
+        // РћР±СЂРµР·Р°РµРј РІСЃРµ Р»РёС€РЅРёРµ РєРѕРЅС†С‹ СЃС‚СЂРѕРє РґРѕ РєРѕРЅС†Р° Р·Р°РїРёСЃРё
         if(message.endsWith("\r\n"))
             message = message.substring(0, message.length() - 2);
         else if(message.endsWith("\n"))

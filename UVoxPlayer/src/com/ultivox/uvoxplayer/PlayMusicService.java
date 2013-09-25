@@ -56,7 +56,7 @@ public class PlayMusicService extends Service {
 		mPlayer.setLooping(false);
 		mPlayer.reset();
 		brMusic = new BroadcastReceiver() {
-			// действия при получении сообщений
+			// РґРµР№СЃС‚РІРёСЏ РїСЂРё РїРѕР»СѓС‡РµРЅРёРё СЃРѕРѕР±С‰РµРЅРёР№
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
@@ -67,7 +67,7 @@ public class PlayMusicService extends Service {
 			}
 		};
 		IntentFilter volFilt = new IntentFilter(UVoxPlayer.BROADCAST_MUSICINFO);
-		// регистрируем (включаем) BroadcastReceiver
+		// СЂРµРіРёСЃС‚СЂРёСЂСѓРµРј (РІРєР»СЋС‡Р°РµРј) BroadcastReceiver
 		registerReceiver(brMusic, volFilt);
 		Log.d(TAG, "Create service");
 	}
@@ -111,7 +111,7 @@ public class PlayMusicService extends Service {
 			Random generator = new Random();
 			do {
 				nb = generator.nextInt(filesPlayList.length);
-				Log.d(TAG, String.format("random nb: - %d", nb));
+				Log.d(TAG, String.format("random nb: - %d of %d, prev - %d", nb, filesPlayList.length, prev));
 			} while (prev == nb); // not previous song
 			prev = nb;
 			currFileToPlay = UVoxEnvironment.getExternalStorageDirectory()
@@ -287,13 +287,13 @@ public class PlayMusicService extends Service {
 	public String getCurrentPlayList() {
 		String curPlayList = null;
 		;
-		// переменные для query
+		// РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ query
 		String[] columns = null;
 		String selection = null;
 		String[] selectionArgs = null;
 
-		Calendar upTime; // Текущее время
-		Calendar playTime; // Время текущего плей-листа
+		Calendar upTime; // РўРµРєСѓС‰РµРµ РІСЂРµРјСЏ
+		Calendar playTime; // Р’СЂРµРјСЏ С‚РµРєСѓС‰РµРіРѕ РїР»РµР№-Р»РёСЃС‚Р°
 
 		upTime = Calendar.getInstance();
 		playTime = Calendar.getInstance();
