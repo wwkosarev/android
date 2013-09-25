@@ -175,7 +175,7 @@ public class LogCatTask extends AsyncTask<String, String, String> implements Bac
 				outputStream.flush();
 				outputStream.close();
 
-				// и получаем ответ от сервера
+				// Рё РїРѕР»СѓС‡Р°РµРј РѕС‚РІРµС‚ РѕС‚ СЃРµСЂРІРµСЂР°
 
 				BufferedReader in = new BufferedReader(new InputStreamReader(
 						connection.getInputStream()));
